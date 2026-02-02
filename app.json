@@ -1,0 +1,11 @@
+{
+  "android": {
+    "package": "com.anonymous.sai_app"
+  },
+  "expo": {
+    "newArchEnabled": false,
+    "android": {
+      "package": "com.anonymous.sai_app"
+    }
+  }
+}

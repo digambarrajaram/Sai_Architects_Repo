@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Project Detail - Owner View</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#136dec",
+                        "primary-dark": "#0b4cb4",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101822",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1e293b",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        /* Hide scrollbar for clean horizontal scrolling */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white transition-colors duration-200">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto bg-background-light dark:bg-background-dark shadow-xl">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-50 flex items-center justify-between bg-surface-light/90 dark:bg-surface-dark/90 backdrop-blur-md p-4 border-b border-slate-200 dark:border-slate-800">
+<button class="flex size-10 items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-900 dark:text-white">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold leading-tight tracking-tight flex-1 text-center">Project Detail</h1>
+<div class="flex gap-2">
+<button class="flex size-10 items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-900 dark:text-white" title="Export Report">
+<span class="material-symbols-outlined">ios_share</span>
+</button>
+<button class="flex size-10 items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-900 dark:text-white" title="Edit Project">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+</header>
+<!-- Scrollable Content -->
+<main class="flex-1 flex flex-col gap-5 p-4 pb-24">
+<!-- Project Header Card -->
+<div class="flex flex-col gap-4 rounded-2xl bg-surface-light dark:bg-surface-dark p-4 shadow-sm border border-slate-100 dark:border-slate-800">
+<div class="flex items-start justify-between gap-4">
+<div class="flex flex-col gap-1.5 flex-[2]">
+<div class="inline-flex items-center gap-2">
+<span class="inline-flex items-center rounded-full bg-blue-100 dark:bg-blue-900/30 px-2.5 py-0.5 text-xs font-semibold text-primary dark:text-blue-300">
+                                In Progress
+                            </span>
+</div>
+<h2 class="text-xl font-bold leading-tight text-slate-900 dark:text-white">Highway 9 Resurfacing</h2>
+<div class="flex items-center gap-1 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+<p class="text-sm font-medium leading-normal">Sector 4, North District</p>
+</div>
+</div>
+<!-- Map / Image Thumbnail -->
+<div class="w-20 h-20 shrink-0 overflow-hidden rounded-xl bg-slate-200 dark:bg-slate-700 relative">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Map view of Highway 9 sector 4" data-location="North District" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAAmPmOfUh2jF-0M3ECPWBUBwlKveDzVEek1tmu8e-aCGyqWcwkcKNLpJbQlpV4_Gdwn955C_WBxiWBiROtRcehGTOkRT0rZO-z0b6iwsnG1kIYuqQkjUCVJyP-TJMYg7dBBUdZ_onlcSat7WVsjJLPJwTndiqgEk2uoq4C3MC1Fg_4alBnJve8ixLo8354XPdGxUr3AglhDkx3L3fpHjneX-cyreFQFx8UtAUi6dpfuMOir5wLA961_7a3OvpUfb-uwhWusCuzo7Nv');"></div>
+</div>
+</div>
+</div>
+<!-- Financial KPIs Grid -->
+<div class="grid grid-cols-2 gap-3">
+<div class="flex flex-col gap-1 rounded-xl bg-surface-light dark:bg-surface-dark p-4 shadow-sm border border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-2 mb-1">
+<div class="p-1.5 rounded-md bg-blue-50 dark:bg-blue-900/20 text-primary">
+<span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
+</div>
+<p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Budget</p>
+</div>
+<p class="text-xl font-bold text-slate-900 dark:text-white tracking-tight">$500,000</p>
+</div>
+<div class="flex flex-col gap-1 rounded-xl bg-surface-light dark:bg-surface-dark p-4 shadow-sm border border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-2 mb-1">
+<div class="p-1.5 rounded-md bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400">
+<span class="material-symbols-outlined text-[20px]">payments</span>
+</div>
+<p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Spent</p>
+</div>
+<p class="text-xl font-bold text-slate-900 dark:text-white tracking-tight">$320,000</p>
+</div>
+<div class="col-span-2 flex items-center justify-between rounded-xl bg-surface-light dark:bg-surface-dark p-4 shadow-sm border border-slate-100 dark:border-slate-800">
+<div class="flex flex-col">
+<p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Net P/L</p>
+<p class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">+$180,000</p>
+</div>
+<div class="flex items-center gap-1 rounded-full bg-green-100 dark:bg-green-900/30 px-3 py-1 text-green-700 dark:text-green-400">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+<span class="text-sm font-bold">+12%</span>
+</div>
+</div>
+</div>
+<!-- Budget Progress -->
+<div class="flex flex-col gap-3 rounded-xl bg-surface-light dark:bg-surface-dark p-5 shadow-sm border border-slate-100 dark:border-slate-800">
+<div class="flex items-center justify-between">
+<h3 class="text-base font-bold text-slate-900 dark:text-white">Budget Utilization</h3>
+<span class="text-sm font-medium text-primary dark:text-blue-400">64%</span>
+</div>
+<div class="relative h-2.5 w-full rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
+<div class="absolute top-0 left-0 h-full rounded-full bg-primary" style="width: 64%;"></div>
+</div>
+<div class="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
+<span>$0</span>
+<span>$250k</span>
+<span>$500k</span>
+</div>
+</div>
+<!-- Expense Trends Chart -->
+<div class="flex flex-col gap-4 rounded-xl bg-surface-light dark:bg-surface-dark p-5 shadow-sm border border-slate-100 dark:border-slate-800">
+<div class="flex items-center justify-between">
+<h3 class="text-base font-bold text-slate-900 dark:text-white">Expense Trend</h3>
+<div class="flex rounded-lg bg-slate-100 dark:bg-slate-700 p-0.5">
+<button class="rounded-md bg-white dark:bg-slate-600 px-3 py-1 text-xs font-bold text-slate-900 dark:text-white shadow-sm transition-all">Daily</button>
+<button class="rounded-md px-3 py-1 text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all">Weekly</button>
+</div>
+</div>
+<!-- CSS Bar Chart Visualization -->
+<div class="mt-2 flex h-40 items-end justify-between gap-2">
+<!-- Bar 1 -->
+<div class="group relative flex w-full flex-col items-center justify-end gap-2 h-full">
+<div class="w-full rounded-t-sm bg-primary/20 group-hover:bg-primary transition-all duration-300 h-[30%]"></div>
+<span class="text-[10px] font-medium text-slate-400">M</span>
+</div>
+<!-- Bar 2 -->
+<div class="group relative flex w-full flex-col items-center justify-end gap-2 h-full">
+<div class="w-full rounded-t-sm bg-primary/20 group-hover:bg-primary transition-all duration-300 h-[45%]"></div>
+<span class="text-[10px] font-medium text-slate-400">T</span>
+</div>
+<!-- Bar 3 -->
+<div class="group relative flex w-full flex-col items-center justify-end gap-2 h-full">
+<div class="w-full rounded-t-sm bg-primary/20 group-hover:bg-primary transition-all duration-300 h-[25%]"></div>
+<span class="text-[10px] font-medium text-slate-400">W</span>
+</div>
+<!-- Bar 4 (Peak) -->
+<div class="group relative flex w-full flex-col items-center justify-end gap-2 h-full">
+<!-- Tooltip for active state -->
+<div class="absolute -top-8 bg-slate-800 text-white text-[10px] px-2 py-1 rounded shadow-lg opacity-100 mb-1 z-10">$4.5k</div>
+<div class="w-full rounded-t-sm bg-primary transition-all duration-300 h-[85%] shadow-[0_0_10px_rgba(19,109,236,0.3)]"></div>
+<span class="text-[10px] font-bold text-slate-900 dark:text-white">T</span>
+</div>
+<!-- Bar 5 -->
+<div class="group relative flex w-full flex-col items-center justify-end gap-2 h-full">
+<div class="w-full rounded-t-sm bg-primary/20 group-hover:bg-primary transition-all duration-300 h-[50%]"></div>
+<span class="text-[10px] font-medium text-slate-400">F</span>
+</div>
+<!-- Bar 6 -->
+<div class="group relative flex w-full flex-col items-center justify-end gap-2 h-full">
+<div class="w-full rounded-t-sm bg-primary/20 group-hover:bg-primary transition-all duration-300 h-[20%]"></div>
+<span class="text-[10px] font-medium text-slate-400">S</span>
+</div>
+<!-- Bar 7 -->
+<div class="group relative flex w-full flex-col items-center justify-end gap-2 h-full">
+<div class="w-full rounded-t-sm bg-primary/20 group-hover:bg-primary transition-all duration-300 h-[10%]"></div>
+<span class="text-[10px] font-medium text-slate-400">S</span>
+</div>
+</div>
+</div>
+<!-- Recent Expenses List -->
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between px-1">
+<h3 class="text-base font-bold text-slate-900 dark:text-white">Recent Expenses</h3>
+<button class="text-sm font-semibold text-primary dark:text-blue-400">View All</button>
+</div>
+<div class="flex flex-col gap-3">
+<!-- Item 1 -->
+<div class="flex items-center justify-between rounded-xl bg-surface-light dark:bg-surface-dark p-3 shadow-sm border border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-3">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined">construction</span>
+</div>
+<div class="flex flex-col">
+<p class="text-sm font-bold text-slate-900 dark:text-white">Cement Procurement</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Oct 24 • Material</p>
+</div>
+</div>
+<p class="text-sm font-bold text-slate-900 dark:text-white">-$4,500</p>
+</div>
+<!-- Item 2 -->
+<div class="flex items-center justify-between rounded-xl bg-surface-light dark:bg-surface-dark p-3 shadow-sm border border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-3">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined">engineering</span>
+</div>
+<div class="flex flex-col">
+<p class="text-sm font-bold text-slate-900 dark:text-white">Labor Wages - Week 4</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Oct 22 • Labor</p>
+</div>
+</div>
+<p class="text-sm font-bold text-slate-900 dark:text-white">-$1,200</p>
+</div>
+<!-- Item 3 -->
+<div class="flex items-center justify-between rounded-xl bg-surface-light dark:bg-surface-dark p-3 shadow-sm border border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-3">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined">directions_car</span>
+</div>
+<div class="flex flex-col">
+<p class="text-sm font-bold text-slate-900 dark:text-white">Excavator Rental</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Oct 20 • Equipment</p>
+</div>
+</div>
+<p class="text-sm font-bold text-slate-900 dark:text-white">-$800</p>
+</div>
+<!-- Item 4 -->
+<div class="flex items-center justify-between rounded-xl bg-surface-light dark:bg-surface-dark p-3 shadow-sm border border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-3">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined">water_drop</span>
+</div>
+<div class="flex flex-col">
+<p class="text-sm font-bold text-slate-900 dark:text-white">Water Supply</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Oct 19 • Utilities</p>
+</div>
+</div>
+<p class="text-sm font-bold text-slate-900 dark:text-white">-$250</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Sticky Floating Action Button area -->
+<div class="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background-light via-background-light to-transparent dark:from-background-dark dark:via-background-dark pointer-events-none flex justify-center max-w-md mx-auto z-20">
+<button class="pointer-events-auto shadow-[0_8px_16px_rgba(19,109,236,0.3)] flex w-full max-w-[90%] items-center justify-center gap-2 rounded-xl bg-primary hover:bg-primary-dark transition-colors px-6 py-4 text-base font-bold text-white">
+<span class="material-symbols-outlined">add</span>
+                Add Expense
+            </button>
+</div>
+</div>
+</body></html>

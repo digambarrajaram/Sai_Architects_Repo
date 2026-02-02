@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Profile and Role Screen</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#136dec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101822",
+                        "card-light": "#ffffff",
+                        "card-dark": "#1a2430",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased overflow-hidden">
+<div class="relative flex h-full w-full max-w-md mx-auto flex-col bg-background-light dark:bg-background-dark overflow-hidden shadow-2xl">
+<header class="flex items-center justify-between p-4 bg-background-light dark:bg-background-dark sticky top-0 z-20">
+<div class="flex size-10 shrink-0 items-center justify-center">
+<button class="flex items-center justify-center rounded-lg size-10 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">arrow_back</span>
+</button>
+</div>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center">My Profile</h2>
+<div class="flex w-10 items-center justify-end">
+<button class="flex items-center justify-center rounded-lg size-10 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">edit</span>
+</button>
+</div>
+</header>
+<main class="flex-1 overflow-y-auto overflow-x-hidden pb-24 px-4 scrollbar-hide">
+<div class="flex flex-col items-center pt-6 pb-8">
+<div class="relative mb-4">
+<div class="size-24 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-3xl font-bold text-slate-500 dark:text-slate-400 border-4 border-white dark:border-card-dark shadow-sm">
+                        JC
+                    </div>
+<div class="absolute bottom-0 right-0 p-1.5 bg-primary rounded-full border-2 border-white dark:border-card-dark shadow-sm">
+<span class="material-symbols-outlined text-white block" style="font-size: 16px;">verified_user</span>
+</div>
+</div>
+<h1 class="text-2xl font-bold text-slate-900 dark:text-white mb-1">James Carter</h1>
+<p class="text-sm text-slate-500 dark:text-slate-400 mb-4 font-medium">+1 (555) 123-4567</p>
+<span class="inline-flex items-center rounded-full bg-blue-50 dark:bg-blue-900/30 px-4 py-1.5 text-sm font-bold text-blue-700 dark:text-blue-300 ring-1 ring-inset ring-blue-700/10 tracking-wide uppercase">
+                    Owner
+                </span>
+</div>
+<div class="flex flex-col gap-4">
+<div class="bg-white dark:bg-card-dark rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+<div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20">
+<h3 class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Account</h3>
+</div>
+<button class="w-full flex items-center gap-4 p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800 last:border-0 text-left">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">
+<span class="material-symbols-outlined" style="font-size: 24px;">notifications</span>
+</div>
+<div class="flex-1">
+<h4 class="text-sm font-semibold text-slate-900 dark:text-white">Notification Preferences</h4>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Manage push and email alerts</p>
+</div>
+<span class="material-symbols-outlined text-slate-400" style="font-size: 20px;">chevron_right</span>
+</button>
+<button class="w-full flex items-center gap-4 p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800 last:border-0 text-left">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400">
+<span class="material-symbols-outlined" style="font-size: 24px;">lock</span>
+</div>
+<div class="flex-1">
+<h4 class="text-sm font-semibold text-slate-900 dark:text-white">Security</h4>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Password, 2FA, and sessions</p>
+</div>
+<span class="material-symbols-outlined text-slate-400" style="font-size: 20px;">chevron_right</span>
+</button>
+<button class="w-full flex items-center gap-4 p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors text-left">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400">
+<span class="material-symbols-outlined" style="font-size: 24px;">language</span>
+</div>
+<div class="flex-1">
+<h4 class="text-sm font-semibold text-slate-900 dark:text-white">Language &amp; Region</h4>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">English (US)</p>
+</div>
+<span class="material-symbols-outlined text-slate-400" style="font-size: 20px;">chevron_right</span>
+</button>
+</div>
+<div class="bg-white dark:bg-card-dark rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+<div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20">
+<h3 class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Support</h3>
+</div>
+<button class="w-full flex items-center gap-4 p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800 last:border-0 text-left">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400">
+<span class="material-symbols-outlined" style="font-size: 24px;">help</span>
+</div>
+<div class="flex-1">
+<h4 class="text-sm font-semibold text-slate-900 dark:text-white">Help Center</h4>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">FAQ and customer support</p>
+</div>
+<span class="material-symbols-outlined text-slate-400" style="font-size: 20px;">chevron_right</span>
+</button>
+<button class="w-full flex items-center gap-4 p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors text-left">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined" style="font-size: 24px;">description</span>
+</div>
+<div class="flex-1">
+<h4 class="text-sm font-semibold text-slate-900 dark:text-white">Terms &amp; Policy</h4>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Legal information</p>
+</div>
+<span class="material-symbols-outlined text-slate-400" style="font-size: 20px;">open_in_new</span>
+</button>
+</div>
+<button class="w-full mt-2 flex items-center justify-center gap-2 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-semibold hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors border border-red-100 dark:border-red-900/30 shadow-sm">
+<span class="material-symbols-outlined" style="font-size: 20px;">logout</span>
+                    Log Out
+                </button>
+<p class="text-center text-xs text-slate-400 dark:text-slate-500 mt-2 pb-6">
+                    Version 2.4.0 (Build 302)
+                </p>
+</div>
+<div class="h-6"></div>
+</main>
+<nav class="absolute bottom-0 z-30 w-full bg-white dark:bg-[#1a2430] border-t border-slate-200 dark:border-slate-800">
+<div class="grid h-16 max-w-lg grid-cols-4 mx-auto font-medium">
+<button class="inline-flex flex-col items-center justify-center px-5 hover:bg-slate-50 dark:hover:bg-slate-800 group transition-colors" type="button">
+<span class="material-symbols-outlined text-slate-500 dark:text-slate-400 mb-1 group-hover:text-slate-900 dark:group-hover:text-white transition-colors" style="font-size: 24px;">dashboard</span>
+<span class="text-[10px] text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white">Projects</span>
+</button>
+<button class="inline-flex flex-col items-center justify-center px-5 hover:bg-slate-50 dark:hover:bg-slate-800 group transition-colors" type="button">
+<span class="material-symbols-outlined text-slate-500 dark:text-slate-400 mb-1 group-hover:text-slate-900 dark:group-hover:text-white transition-colors" style="font-size: 24px;">receipt_long</span>
+<span class="text-[10px] text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white">Expenses</span>
+</button>
+<button class="inline-flex flex-col items-center justify-center px-5 hover:bg-slate-50 dark:hover:bg-slate-800 group transition-colors" type="button">
+<span class="material-symbols-outlined text-slate-500 dark:text-slate-400 mb-1 group-hover:text-slate-900 dark:group-hover:text-white transition-colors" style="font-size: 24px;">bar_chart</span>
+<span class="text-[10px] text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white">Reports</span>
+</button>
+<button class="inline-flex flex-col items-center justify-center px-5 hover:bg-slate-50 dark:hover:bg-slate-800 group transition-colors" type="button">
+<span class="material-symbols-outlined text-primary mb-1 group-hover:text-primary transition-colors" style="font-size: 24px; font-variation-settings: 'FILL' 1;">settings</span>
+<span class="text-[10px] text-primary group-hover:text-primary font-semibold">Settings</span>
+</button>
+</div>
+</nav>
+</div>
+
+</body></html>

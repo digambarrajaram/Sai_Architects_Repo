@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Project List Screen Variant 2</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#136dec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101822",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding for horizontal scroll areas */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white transition-colors duration-200">
+<div class="relative flex min-h-screen w-full flex-col overflow-hidden pb-24">
+<!-- Top App Bar -->
+<header class="flex items-center justify-between px-4 py-3 sticky top-0 z-10 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-sm">
+<div class="flex items-center gap-3">
+<div class="h-10 w-10 rounded-full bg-cover bg-center border border-slate-200 dark:border-slate-700" data-alt="User profile portrait showing a professional engineer" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCYk8k7oh02B82sYLYUVuC70HXZK-8kmRoQU9t6ffjBAkHOkk0QIRQHY2-jPAOtKro_Rn_v8Uiq-XBLkcjoImIadd4OEHH9r2WLOt-pud2v3cidq8Y95F2eSHWnmuNT5J8uHFJJgwwOndwHRuOz3KUnmmpebdTXVM_R2JD1WDSFIUzVWf6sWFj9JsYo3yCgM628f4yhcI0OlKSfCnNs1Ty71UfubE-I2oFWb_1Ya804vGzPq5EvHFwZSyUvuc49hbEhAu7UgRu7bnFK");'>
+</div>
+</div>
+<h1 class="text-lg font-bold text-slate-900 dark:text-white">My Projects</h1>
+<button class="flex items-center justify-center p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</header>
+<!-- Search Bar -->
+<div class="px-4 py-2">
+<div class="flex items-center rounded-lg bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 h-12">
+<div class="pl-4 pr-2 text-slate-400">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="w-full bg-transparent border-none text-base text-slate-900 dark:text-white placeholder-slate-400 focus:ring-0" placeholder="Search projects or location" type="text"/>
+</div>
+</div>
+<!-- Filter Chips -->
+<div class="flex gap-2 px-4 py-3 overflow-x-auto no-scrollbar">
+<button class="flex h-9 shrink-0 items-center justify-center rounded-full bg-primary text-white px-5 text-sm font-medium transition-transform active:scale-95">
+                All
+            </button>
+<button class="flex h-9 shrink-0 items-center justify-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 px-5 text-sm font-medium transition-transform active:scale-95 hover:bg-slate-50 dark:hover:bg-slate-700">
+                In Progress
+            </button>
+<button class="flex h-9 shrink-0 items-center justify-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 px-5 text-sm font-medium transition-transform active:scale-95 hover:bg-slate-50 dark:hover:bg-slate-700">
+                Planning
+            </button>
+<button class="flex h-9 shrink-0 items-center justify-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 px-5 text-sm font-medium transition-transform active:scale-95 hover:bg-slate-50 dark:hover:bg-slate-700">
+                Completed
+            </button>
+</div>
+<!-- Projects Grid -->
+<main class="grid grid-cols-2 gap-4 px-4 pb-6">
+<!-- Card 1 -->
+<div class="flex flex-col bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm border border-slate-100 dark:border-slate-700/50 hover:shadow-md transition-shadow">
+<div class="h-28 w-full rounded-lg bg-cover bg-center mb-3 relative overflow-hidden group" data-alt="Construction site view of a highway extension project" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDbnOe8HqfCiN_Iujsle7VLUqyYK5vkM6CMFjYuvugogpIDjUfQJ8ofz9zfydgRpjdkjqyZguYIzw4-hgq0yTuiSosrGAuy6nZX9E9Rx7vDNSxJe0TRArW2vM0dl8Y9HBVolfkRDYQVk4hFlq6NdwtAgdap68MBWj427zUgMFEM2TZ3UP23nCPMGnWkwShTXdEg3Ivk3KsqAizqLPCKEZ7huBp-1yQBWupdJuQBOESGoQIV3SOZkO0XAwguntCqSUOANXLEpHwIQzt-");'>
+<div class="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors"></div>
+<span class="absolute top-2 right-2 bg-white/90 dark:bg-slate-900/90 text-[10px] font-bold px-2 py-1 rounded text-primary shadow-sm backdrop-blur-sm">CIV-23</span>
+</div>
+<div class="flex items-start justify-between mb-1">
+<span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400">In Progress</span>
+</div>
+<h3 class="text-base font-bold text-slate-900 dark:text-white leading-tight mb-1">Highway 4 Extension</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400 mb-4 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+                    Austin, TX
+                </p>
+<div class="mt-auto">
+<div class="flex justify-between text-xs mb-1.5 font-medium">
+<span class="text-slate-600 dark:text-slate-400">Progress</span>
+<span class="text-primary">45%</span>
+</div>
+<div class="h-1.5 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 45%"></div>
+</div>
+<p class="text-[10px] text-slate-400 dark:text-slate-500 mt-2 text-right">Due: Oct 24, 2024</p>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="flex flex-col bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm border border-slate-100 dark:border-slate-700/50 hover:shadow-md transition-shadow">
+<div class="h-28 w-full rounded-lg bg-cover bg-center mb-3 relative overflow-hidden group" data-alt="Steel bridge structure under repair with scaffolding" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDVfhQk5lzWR5kkhYTqN5I8cBgvRZHyvwfW9xPgvFPcxGhTPBgWkLYjMYxT79yH4Lk7D9vcEMTJUD945VBT377AaVY5c8bxl1J21-0ymzio-YJq4w3PQ1fvtFW12tesbu8MeertNQ60IDLR7uxmP4A5OisiZqcWfbrlKEWBUIAfOZ61N0CQPHaZXBxhv1gTfO9vZlljAGuNSdTcOPLlq--CygcP_924-Hfuv5vhVL6gOd_tl9aueaeJGGV6CPvUJh0hLCsStOhPWzT0");'>
+<span class="absolute top-2 right-2 bg-white/90 dark:bg-slate-900/90 text-[10px] font-bold px-2 py-1 rounded text-primary shadow-sm backdrop-blur-sm">CIV-24</span>
+</div>
+<div class="flex items-start justify-between mb-1">
+<span class="inline-flex items-center rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-600/20 dark:bg-amber-900/30 dark:text-amber-400">Urgent</span>
+</div>
+<h3 class="text-base font-bold text-slate-900 dark:text-white leading-tight mb-1">City Bridge Repair</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400 mb-4 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+                    Chicago, IL
+                </p>
+<div class="mt-auto">
+<div class="flex justify-between text-xs mb-1.5 font-medium">
+<span class="text-slate-600 dark:text-slate-400">Progress</span>
+<span class="text-amber-600 dark:text-amber-400">82%</span>
+</div>
+<div class="h-1.5 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+<div class="h-full bg-amber-500 rounded-full" style="width: 82%"></div>
+</div>
+<p class="text-[10px] text-slate-400 dark:text-slate-500 mt-2 text-right">Due: Sep 12, 2024</p>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="flex flex-col bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm border border-slate-100 dark:border-slate-700/50 hover:shadow-md transition-shadow">
+<div class="h-28 w-full rounded-lg bg-cover bg-center mb-3 relative overflow-hidden group" data-alt="Architectural rendering of a modern downtown plaza" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA-y5h8jx09XhcBCzMTcq89jXbi-BHDcpF2tcRaQjPgo6NHqyCkLvHGADzwpXUq--yZEWH7YavrshKcUutr1uxAqA85B-4N9C_h2MgtYd2fXUQijrIHEqTcgWN-rLWQ5Ho-6tffXEvBcG92U9kHylPWGvW8R0Ms7DvUGnLvdW-zOxtZakJrmv8EAvNePwVIZBA4l0sGvoVH8SULcwzTYrkCFpbwY9o2Db4q4F4Uv97GXJ1BdT3LUzegzq5mvH4ho5giO47O0mIPIGax");'>
+<span class="absolute top-2 right-2 bg-white/90 dark:bg-slate-900/90 text-[10px] font-bold px-2 py-1 rounded text-primary shadow-sm backdrop-blur-sm">CIV-28</span>
+</div>
+<div class="flex items-start justify-between mb-1">
+<span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10 dark:bg-blue-900/30 dark:text-blue-400">Planning</span>
+</div>
+<h3 class="text-base font-bold text-slate-900 dark:text-white leading-tight mb-1">Downtown Plaza</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400 mb-4 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+                    Seattle, WA
+                </p>
+<div class="mt-auto">
+<div class="flex justify-between text-xs mb-1.5 font-medium">
+<span class="text-slate-600 dark:text-slate-400">Progress</span>
+<span class="text-primary">15%</span>
+</div>
+<div class="h-1.5 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+<div class="h-full bg-blue-400 rounded-full" style="width: 15%"></div>
+</div>
+<p class="text-[10px] text-slate-400 dark:text-slate-500 mt-2 text-right">Start: Dec 01, 2024</p>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="flex flex-col bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm border border-slate-100 dark:border-slate-700/50 hover:shadow-md transition-shadow opacity-80">
+<div class="h-28 w-full rounded-lg bg-cover bg-center mb-3 relative overflow-hidden group" data-alt="Newly paved asphalt road winding through green hills" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCJ12cByiXdtZ5phymQiuz1u9MrKAIM0WjsZRpBcw8szgseQcTKay5yDrLj03xGz9n61jy76-S00R7AB2hY4Cknn9F7-Wdj_YPTnxBHaKmCqR-D4Np0KznhIN35wjLqEnLDqycFu3tTU-gJEGD3oyJYlTLYHRat8_FHOklOnMisSTqJb7AAYpOP4fb3pgdqBcioDyaiDUNwL7GzsXCtNm1hyor0-Hx4ujGzwcFl_SVzw0URZtogJlzFWBI52aCHHNpiURNCOPbyJiLH");'>
+<div class="absolute inset-0 flex items-center justify-center bg-black/40">
+<span class="material-symbols-outlined text-white text-3xl font-bold">check_circle</span>
+</div>
+</div>
+<div class="flex items-start justify-between mb-1">
+<span class="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-500/10 dark:bg-slate-700 dark:text-slate-400">Completed</span>
+</div>
+<h3 class="text-base font-bold text-slate-900 dark:text-white leading-tight mb-1">River Road Paving</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400 mb-4 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+                    Portland, OR
+                </p>
+<div class="mt-auto">
+<div class="flex justify-between text-xs mb-1.5 font-medium">
+<span class="text-slate-600 dark:text-slate-400">Complete</span>
+<span class="text-green-600 dark:text-green-400">100%</span>
+</div>
+<div class="h-1.5 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+<div class="h-full bg-green-500 rounded-full" style="width: 100%"></div>
+</div>
+<p class="text-[10px] text-slate-400 dark:text-slate-500 mt-2 text-right">Done: Aug 15, 2024</p>
+</div>
+</div>
+<!-- Card 5 -->
+<div class="flex flex-col bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm border border-slate-100 dark:border-slate-700/50 hover:shadow-md transition-shadow">
+<div class="h-28 w-full rounded-lg bg-cover bg-center mb-3 relative overflow-hidden group" data-alt="Large concrete pipes stacked on a construction site" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDgjGe-Q1GvQfx0bAbTYerSv3xXMFw0AL_SMShonmtwWTzT0QqOahzlNzEBDoWbnQJC6CORLTp8jSdeZpFEK3UlgXSplgx2eFC6DemRPsGPsZmpl8XITJpjBL0aJm3ldqFgosIiC2kMoltTVRNqgQ83CEcQsm322Qr3K2sf4_5namELcRyaYgqLQAlHV6O0ooozegoEo8enMkxILqfhHMXnijR5g__SvjkuRch1iZaqm_6oT5LP-wwmcLqi15E0eTaXuvhufaF6_P9L");'>
+<span class="absolute top-2 right-2 bg-white/90 dark:bg-slate-900/90 text-[10px] font-bold px-2 py-1 rounded text-primary shadow-sm backdrop-blur-sm">CIV-31</span>
+</div>
+<div class="flex items-start justify-between mb-1">
+<span class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10 dark:bg-red-900/30 dark:text-red-400">Paused</span>
+</div>
+<h3 class="text-base font-bold text-slate-900 dark:text-white leading-tight mb-1">Sewer Line B</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400 mb-4 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+                    Denver, CO
+                </p>
+<div class="mt-auto">
+<div class="flex justify-between text-xs mb-1.5 font-medium">
+<span class="text-slate-600 dark:text-slate-400">Progress</span>
+<span class="text-red-500">30%</span>
+</div>
+<div class="h-1.5 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+<div class="h-full bg-red-400 rounded-full" style="width: 30%"></div>
+</div>
+<p class="text-[10px] text-slate-400 dark:text-slate-500 mt-2 text-right">Hold: Material Delay</p>
+</div>
+</div>
+<!-- Card 6 -->
+<div class="flex flex-col bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm border border-slate-100 dark:border-slate-700/50 hover:shadow-md transition-shadow">
+<div class="h-28 w-full rounded-lg bg-cover bg-center mb-3 relative overflow-hidden group" data-alt="Industrial water treatment facility with tanks" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCGRqCmV5SmtBFgXMUt1wPGUvJYf8wDhCwsKGgzfgcOX0GSYI7l0kOLsziK9aMODoSB-NrLgJRxTfAiVDdMA0NcSdBl-iARRUhcITYv9jtiM7dp27Hm0q5zcmBvPmVOaB1DseX-JE1Kg2yX-T9lfuQWy7wmAZTI_m_wa36r09C55j-4B4cu-pGp63f6YuyFjBPYccrdkNDZsbPI2f2J8XyyMp6B4EeXVsxDO1VrokVpBW79bzr6e-lZ-InWckmsgwLMs-G8HZkLAC9b");'>
+<span class="absolute top-2 right-2 bg-white/90 dark:bg-slate-900/90 text-[10px] font-bold px-2 py-1 rounded text-primary shadow-sm backdrop-blur-sm">CIV-19</span>
+</div>
+<div class="flex items-start justify-between mb-1">
+<span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400">In Progress</span>
+</div>
+<h3 class="text-base font-bold text-slate-900 dark:text-white leading-tight mb-1">Water Treatment Plant</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400 mb-4 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+                    Phoenix, AZ
+                </p>
+<div class="mt-auto">
+<div class="flex justify-between text-xs mb-1.5 font-medium">
+<span class="text-slate-600 dark:text-slate-400">Progress</span>
+<span class="text-primary">60%</span>
+</div>
+<div class="h-1.5 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 60%"></div>
+</div>
+<p class="text-[10px] text-slate-400 dark:text-slate-500 mt-2 text-right">Due: Jan 15, 2025</p>
+</div>
+</div>
+</main>
+<!-- Floating Action Button (FAB) -->
+<div class="fixed bottom-24 right-4 z-20">
+<button class="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-blue-500/40 transition-transform active:scale-90 hover:bg-blue-600">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</div>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 z-30 h-20 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 pb-5">
+<div class="grid h-full grid-cols-4 items-center">
+<button class="group flex flex-col items-center justify-center gap-1">
+<span class="material-symbols-outlined text-primary text-2xl group-active:scale-95 transition-transform">home</span>
+<span class="text-[10px] font-medium text-primary">Home</span>
+</button>
+<button class="group flex flex-col items-center justify-center gap-1">
+<span class="material-symbols-outlined text-slate-400 text-2xl group-active:scale-95 transition-transform group-hover:text-slate-600 dark:group-hover:text-slate-300">receipt_long</span>
+<span class="text-[10px] font-medium text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300">Expenses</span>
+</button>
+<button class="group flex flex-col items-center justify-center gap-1">
+<span class="material-symbols-outlined text-slate-400 text-2xl group-active:scale-95 transition-transform group-hover:text-slate-600 dark:group-hover:text-slate-300">assessment</span>
+<span class="text-[10px] font-medium text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300">Reports</span>
+</button>
+<button class="group flex flex-col items-center justify-center gap-1">
+<span class="material-symbols-outlined text-slate-400 text-2xl group-active:scale-95 transition-transform group-hover:text-slate-600 dark:group-hover:text-slate-300">settings</span>
+<span class="text-[10px] font-medium text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300">Settings</span>
+</button>
+</div>
+</nav>
+</div>
+</body></html>

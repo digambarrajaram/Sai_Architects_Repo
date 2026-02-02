@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Owner Audit Logs</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#136dec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101822",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+<!-- Top Navigation Bar -->
+<header class="sticky top-0 z-20 flex items-center justify-between bg-white dark:bg-background-dark p-4 shadow-sm dark:shadow-slate-800/50">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer text-slate-900 dark:text-white">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</div>
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-10 text-slate-900 dark:text-white">Audit Logs</h2>
+<!-- Spacer to balance the back button visually if needed, or action button -->
+<div class="flex w-10 items-center justify-end"></div>
+</header>
+<!-- Search Bar -->
+<div class="sticky top-[64px] z-10 bg-background-light dark:bg-background-dark px-4 py-3 pb-2">
+<label class="flex flex-col h-12 w-full">
+<div class="flex w-full flex-1 items-stretch rounded-xl h-full shadow-sm">
+<div class="flex items-center justify-center pl-4 bg-white dark:bg-slate-800 rounded-l-xl border-r-0 text-slate-400">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-xl focus:outline-0 focus:ring-2 focus:ring-primary/20 border-none bg-white dark:bg-slate-800 focus:border-none h-full placeholder:text-slate-400 px-4 pl-2 text-base font-normal leading-normal text-slate-900 dark:text-white transition-all" placeholder="Search logs by ID, user, or keyword" value=""/>
+</div>
+</label>
+</div>
+<!-- Filter Chips -->
+<div class="flex gap-3 px-4 py-2 overflow-x-auto no-scrollbar pb-4 bg-background-light dark:bg-background-dark border-b border-slate-200 dark:border-slate-800">
+<button class="group flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-primary text-white px-4 shadow-sm hover:bg-primary/90 transition-colors">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+<p class="text-sm font-medium leading-normal">Filter</p>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 hover:border-primary/50 dark:hover:border-primary/50 transition-colors">
+<p class="text-slate-700 dark:text-slate-300 text-sm font-medium leading-normal">Date: This Week</p>
+<span class="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 hover:border-primary/50 dark:hover:border-primary/50 transition-colors">
+<p class="text-slate-700 dark:text-slate-300 text-sm font-medium leading-normal">User: All</p>
+<span class="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 hover:border-primary/50 dark:hover:border-primary/50 transition-colors">
+<p class="text-slate-700 dark:text-slate-300 text-sm font-medium leading-normal">Action: All</p>
+<span class="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
+</button>
+</div>
+<!-- Content Area -->
+<div class="flex flex-col px-4 pb-20">
+<!-- Section: Today -->
+<h3 class="text-slate-500 dark:text-slate-400 text-sm font-bold uppercase tracking-wider px-1 pb-2 pt-6">Today</h3>
+<div class="flex flex-col gap-3">
+<!-- Log Item 1: Approved (Green) -->
+<div class="flex flex-col bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-100 dark:border-slate-700/50">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-3">
+<div class="h-10 w-10 rounded-full bg-cover bg-center" data-alt="Portrait of Sarah Jenkins" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCz-q6AMYP8SPoHyoDEYVkMPd-xsppkfuiwny1YE9XEXe8-EhevoWupKLdQ9yJngjdQ0aDZ8TrkDq_qj03QAR65j7ahJTdsaxlkr4uniUv-1FJllraVK5OuEKhTunUKUkfzm7V8D470FZR4WFQct6qJnPieJM3z2-324LbSCcsi15tfF64er__gg_XAvGmRt5sC7ShAkmQWzaL7H6zdX-qBe28t7RsVBKP0viJKOw-SGeyZJEF2p37zr0TQxJcUCF3BRJd7qXZ4Rn8B");'></div>
+<div>
+<p class="text-sm font-bold text-slate-900 dark:text-white">Sarah Jenkins</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Project Manager</p>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-xs font-medium text-slate-400">09:42 AM</span>
+</div>
+</div>
+<div class="pl-[52px]">
+<div class="flex items-center gap-2 mb-1">
+<span class="inline-flex items-center rounded-md bg-green-50 dark:bg-green-900/30 px-2 py-1 text-xs font-medium text-green-700 dark:text-green-400 ring-1 ring-inset ring-green-600/20">Approved</span>
+<span class="text-sm text-slate-700 dark:text-slate-300">Expense <span class="font-mono text-slate-500">#4092</span></span>
+</div>
+<p class="text-sm font-medium text-primary cursor-pointer hover:underline">Highway 101 Expansion</p>
+</div>
+</div>
+<!-- Log Item 2: Edited (Orange) -->
+<div class="flex flex-col bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-100 dark:border-slate-700/50">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-3">
+<div class="h-10 w-10 rounded-full bg-cover bg-center" data-alt="Portrait of Mike Ross" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBHzRyVwRczfiCOL0AzEcdtduindN3ayuWk_7iIIHToQt46lzP4_EWST3w-0ej0PIPqdyGbWkRwDIfRUTqts0pA41rFEd6ebtnuW-EeLRU5VmbwTe4fadpR-XRLzaWk53bHxGNm39VevehretsC3Q6RnzQIgwH-QnGTM-HrbuM4WTHCtGkiuanweKMahrHhx61EXIjDnm5PGOQEHinnVd58k5a86CkrR0zpyoDJI7GHWoygbMdNrSyz73aYrX6sXttwMKqIOeue0yLu");'></div>
+<div>
+<p class="text-sm font-bold text-slate-900 dark:text-white">Mike Ross</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Site Engineer</p>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-xs font-medium text-slate-400">11:15 AM</span>
+</div>
+</div>
+<div class="pl-[52px]">
+<div class="flex items-center gap-2 mb-1">
+<span class="inline-flex items-center rounded-md bg-amber-50 dark:bg-amber-900/30 px-2 py-1 text-xs font-medium text-amber-700 dark:text-amber-400 ring-1 ring-inset ring-amber-600/20">Edited</span>
+<span class="text-sm text-slate-700 dark:text-slate-300">Material Quantity</span>
+</div>
+<p class="text-sm font-medium text-primary cursor-pointer hover:underline">Bridge Repair Section B</p>
+<div class="mt-2 text-xs text-slate-500 bg-slate-50 dark:bg-slate-900/50 p-2 rounded border border-slate-100 dark:border-slate-700 font-mono">
+                            Changed 'Concrete' from 500kg to 650kg
+                        </div>
+</div>
+</div>
+<!-- Log Item 3: Created (Blue) -->
+<div class="flex flex-col bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-100 dark:border-slate-700/50">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-3">
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+<span class="font-bold text-sm">JS</span>
+</div>
+<div>
+<p class="text-sm font-bold text-slate-900 dark:text-white">John Smith</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Administrator</p>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-xs font-medium text-slate-400">01:30 PM</span>
+</div>
+</div>
+<div class="pl-[52px]">
+<div class="flex items-center gap-2 mb-1">
+<span class="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-900/30 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-400 ring-1 ring-inset ring-blue-600/20">Created</span>
+<span class="text-sm text-slate-700 dark:text-slate-300">New Project</span>
+</div>
+<p class="text-sm font-medium text-primary cursor-pointer hover:underline">Downtown Parking Structure</p>
+</div>
+</div>
+</div>
+<!-- Section: Yesterday -->
+<h3 class="text-slate-500 dark:text-slate-400 text-sm font-bold uppercase tracking-wider px-1 pb-2 pt-6">Yesterday</h3>
+<div class="flex flex-col gap-3">
+<!-- Log Item 4: Deleted (Red) -->
+<div class="flex flex-col bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-100 dark:border-slate-700/50 relative overflow-hidden">
+<!-- Red accent bar on left for severe action -->
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-red-500"></div>
+<div class="flex justify-between items-start mb-2 pl-2">
+<div class="flex items-center gap-3">
+<div class="h-10 w-10 rounded-full bg-cover bg-center" data-alt="Portrait of Jessica Pearson" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCXiZTyKdzQ6etRueGLOhSoawTUCQP6ygo6uBL9GXsOWGFSFB20aOEMuc6yqMb9Hzp3quZp34bhJQitOACd6Z4T1bAUYpRJ3VEfp2raIg0t56cwuUQKjkDaLeei07l6qN9oVg31STF0rjouoDSh8FdxvedUywvWIKmWlY-HM4fJwP7uOlAMLBag9D3BsplBMBfOT8DR97ypJVfkqpdILGXCAfF0vhzO4nk1U82CFI3HqFv2p_esCOSD1LH3y_cnWEl8Na2zZFdLC_FP");'></div>
+<div>
+<p class="text-sm font-bold text-slate-900 dark:text-white">Jessica Pearson</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Managing Partner</p>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-xs font-medium text-slate-400">4:55 PM</span>
+</div>
+</div>
+<div class="pl-[54px]">
+<div class="flex items-center gap-2 mb-1">
+<span class="inline-flex items-center rounded-md bg-red-50 dark:bg-red-900/30 px-2 py-1 text-xs font-medium text-red-700 dark:text-red-400 ring-1 ring-inset ring-red-600/20">Deleted</span>
+<span class="text-sm text-slate-700 dark:text-slate-300">Contract Document</span>
+</div>
+<p class="text-sm font-medium text-slate-500 line-through">Draft_Agreement_v2.pdf</p>
+<p class="text-xs text-slate-400 mt-1">Project: West Side Residential</p>
+</div>
+</div>
+<!-- Log Item 5: Role Change (Purple) -->
+<div class="flex flex-col bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-100 dark:border-slate-700/50">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-3">
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined">dns</span>
+</div>
+<div>
+<p class="text-sm font-bold text-slate-900 dark:text-white">System</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Automated Action</p>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-xs font-medium text-slate-400">2:00 AM</span>
+</div>
+</div>
+<div class="pl-[52px]">
+<div class="flex items-center gap-2 mb-1">
+<span class="inline-flex items-center rounded-md bg-purple-50 dark:bg-purple-900/30 px-2 py-1 text-xs font-medium text-purple-700 dark:text-purple-400 ring-1 ring-inset ring-purple-600/20">System</span>
+<span class="text-sm text-slate-700 dark:text-slate-300">User Permissions Updated</span>
+</div>
+<p class="text-sm font-medium text-slate-700 dark:text-slate-300">Batch Update: 14 users</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

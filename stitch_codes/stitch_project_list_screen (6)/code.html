@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Financial Dashboard - Owner View</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#136dec",
+                        "primary-dark": "#0e52b5",
+                        "secondary": "#64748b",
+                        "success": "#10b981",
+                        "danger": "#ef4444",
+                        "warning": "#f59e0b",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101822",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1e293b",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        
+        .donut-chart {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: conic-gradient(
+                #136dec 0% 45%, 
+                #f59e0b 45% 75%, 
+                #ef4444 75% 100%
+            );
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .donut-hole {
+            width: 80px;
+            height: 80px;
+            background-color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Dark mode support for donut hole */
+        .dark .donut-hole {
+            background-color: #1e293b;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased pb-24">
+<!-- Top Navigation & Header -->
+<header class="sticky top-0 z-30 bg-surface-light/95 dark:bg-surface-dark/95 backdrop-blur-sm border-b border-slate-200 dark:border-slate-800 px-4 pt-12 pb-3 transition-colors">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-3">
+<div class="relative">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-10 ring-2 ring-primary/20" data-alt="Professional headshot of a business owner" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDy22P325opPTnX559Bq2KWeqeZ-Etv_r79YEiIe7N924Lfz4MT3k5qox7e4GAbytTmfU6h3_4yYut918Rj9dkXLGV7wPkkIfgEUt8iEj33D56jy3pSP3HohTdrlkvQURsC0EthX8trOUQfv7PnQyPvzHXm-j6TojvghFkXQkT6uIG-KBrM3OnD2NUsjiw_092-ZC64bH3m0t1aoc_37VyRaXohvmU0lmi4ko_HciHp0sJ98SDkbfF8sOkdJ81QiBp8I2Z9E2d0jsRf");'>
+</div>
+<div class="absolute -bottom-0.5 -right-0.5 size-3 bg-success rounded-full border-2 border-white dark:border-surface-dark"></div>
+</div>
+<div>
+<p class="text-xs text-secondary dark:text-slate-400 font-medium">Good Morning,</p>
+<h1 class="text-base font-bold leading-tight">James Carter</h1>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<!-- Confidential Badge -->
+<div class="hidden sm:flex items-center gap-1 px-2 py-1 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded text-[10px] font-bold text-amber-700 dark:text-amber-500 uppercase tracking-wider">
+<span class="material-symbols-outlined text-[12px]">lock</span>
+                    Owner View
+                </div>
+<button class="relative flex items-center justify-center p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-300" style="font-size: 24px;">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-danger rounded-full border border-white dark:border-surface-dark"></span>
+</button>
+</div>
+</div>
+<!-- Time Filters -->
+<div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+<button class="flex shrink-0 items-center justify-center px-4 py-1.5 rounded-full bg-primary text-white text-sm font-medium shadow-sm shadow-primary/30">
+                This Year
+            </button>
+<button class="flex shrink-0 items-center justify-center px-4 py-1.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-sm font-medium">
+                Last Quarter
+            </button>
+<button class="flex shrink-0 items-center justify-center px-4 py-1.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-sm font-medium">
+                Last Month
+            </button>
+</div>
+</header>
+<main class="flex flex-col gap-6 px-4 py-6 max-w-lg mx-auto w-full">
+<!-- Hero KPI Card -->
+<div class="relative overflow-hidden rounded-2xl bg-surface-light dark:bg-surface-dark shadow-[0_2px_12px_-4px_rgba(0,0,0,0.1)] border border-slate-100 dark:border-slate-800 p-5">
+<!-- Decorative gradient orb -->
+<div class="absolute -top-10 -right-10 w-32 h-32 bg-primary/10 rounded-full blur-2xl"></div>
+<div class="relative z-10">
+<div class="flex items-center justify-between mb-2">
+<p class="text-secondary dark:text-slate-400 text-sm font-medium">Net Profit (YTD)</p>
+<span class="material-symbols-outlined text-primary/40 text-lg">visibility_off</span>
+</div>
+<h2 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight mb-6">$1,240,500</h2>
+<div class="flex gap-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+<div class="flex-1">
+<div class="flex items-center gap-1 mb-1">
+<span class="size-2 rounded-full bg-success"></span>
+<p class="text-xs text-secondary dark:text-slate-400 font-medium">Revenue</p>
+</div>
+<p class="text-base font-semibold text-slate-900 dark:text-white">$4.5M</p>
+</div>
+<div class="w-px bg-slate-100 dark:bg-slate-700"></div>
+<div class="flex-1">
+<div class="flex items-center gap-1 mb-1">
+<span class="size-2 rounded-full bg-danger"></span>
+<p class="text-xs text-secondary dark:text-slate-400 font-medium">Expenses</p>
+</div>
+<p class="text-base font-semibold text-slate-900 dark:text-white">$3.2M</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Charts Section Grid -->
+<div class="grid grid-cols-1 gap-6">
+<!-- Bar Chart: Financial Performance -->
+<div class="rounded-xl bg-surface-light dark:bg-surface-dark shadow-sm border border-slate-100 dark:border-slate-800 p-5">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-base font-bold text-slate-900 dark:text-white">Financial Performance</h3>
+<div class="flex items-center gap-1 text-xs font-medium text-success bg-success/10 px-2 py-0.5 rounded">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+                        +12%
+                    </div>
+</div>
+<!-- Custom CSS Grid Bar Chart -->
+<div class="flex items-end justify-between h-40 gap-2 sm:gap-4 px-1">
+<!-- Year 2021 -->
+<div class="flex flex-col items-center gap-2 flex-1 group cursor-pointer">
+<div class="relative w-full h-full flex items-end justify-center gap-1">
+<!-- Income Bar -->
+<div class="w-2.5 sm:w-4 bg-primary/30 rounded-t-sm h-[45%] group-hover:bg-primary/50 transition-all relative group/bar"></div>
+<!-- Expense Bar -->
+<div class="w-2.5 sm:w-4 bg-danger/30 rounded-t-sm h-[35%] group-hover:bg-danger/50 transition-all"></div>
+</div>
+<span class="text-xs font-medium text-secondary dark:text-slate-500">2021</span>
+</div>
+<!-- Year 2022 -->
+<div class="flex flex-col items-center gap-2 flex-1 group cursor-pointer">
+<div class="relative w-full h-full flex items-end justify-center gap-1">
+<div class="w-2.5 sm:w-4 bg-primary/60 rounded-t-sm h-[65%] group-hover:bg-primary/80 transition-all"></div>
+<div class="w-2.5 sm:w-4 bg-danger/60 rounded-t-sm h-[50%] group-hover:bg-danger/80 transition-all"></div>
+</div>
+<span class="text-xs font-medium text-secondary dark:text-slate-500">2022</span>
+</div>
+<!-- Year 2023 -->
+<div class="flex flex-col items-center gap-2 flex-1 group cursor-pointer">
+<div class="relative w-full h-full flex items-end justify-center gap-1">
+<div class="w-2.5 sm:w-4 bg-primary rounded-t-sm h-[85%] shadow-[0_0_10px_rgba(19,109,236,0.3)]"></div>
+<div class="w-2.5 sm:w-4 bg-danger rounded-t-sm h-[60%]"></div>
+</div>
+<span class="text-xs font-bold text-primary dark:text-primary-light">2023</span>
+</div>
+</div>
+<!-- Legend -->
+<div class="flex justify-center gap-4 mt-4">
+<div class="flex items-center gap-1.5">
+<div class="size-2.5 bg-primary rounded-sm"></div>
+<span class="text-xs text-secondary dark:text-slate-400">Income</span>
+</div>
+<div class="flex items-center gap-1.5">
+<div class="size-2.5 bg-danger rounded-sm"></div>
+<span class="text-xs text-secondary dark:text-slate-400">Expense</span>
+</div>
+</div>
+</div>
+<!-- Donut Chart: Expense Breakdown -->
+<div class="rounded-xl bg-surface-light dark:bg-surface-dark shadow-sm border border-slate-100 dark:border-slate-800 p-5">
+<h3 class="text-base font-bold text-slate-900 dark:text-white mb-6">Expense Distribution</h3>
+<div class="flex flex-col sm:flex-row items-center gap-8 justify-center">
+<!-- Chart -->
+<div class="donut-chart shrink-0">
+<div class="donut-hole">
+<span class="text-sm font-bold text-slate-700 dark:text-slate-200">Total</span>
+</div>
+</div>
+<!-- Legend -->
+<div class="flex flex-col gap-3 w-full max-w-[200px]">
+<div class="flex items-center justify-between text-sm">
+<div class="flex items-center gap-2">
+<span class="size-3 rounded-full bg-primary"></span>
+<span class="text-slate-600 dark:text-slate-300">Materials</span>
+</div>
+<span class="font-semibold text-slate-900 dark:text-white">45%</span>
+</div>
+<div class="flex items-center justify-between text-sm">
+<div class="flex items-center gap-2">
+<span class="size-3 rounded-full bg-warning"></span>
+<span class="text-slate-600 dark:text-slate-300">Labor</span>
+</div>
+<span class="font-semibold text-slate-900 dark:text-white">30%</span>
+</div>
+<div class="flex items-center justify-between text-sm">
+<div class="flex items-center gap-2">
+<span class="size-3 rounded-full bg-danger"></span>
+<span class="text-slate-600 dark:text-slate-300">Logistics</span>
+</div>
+<span class="font-semibold text-slate-900 dark:text-white">25%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Top Projects List -->
+<div>
+<div class="flex items-center justify-between mb-4 mt-2">
+<h3 class="text-lg font-bold text-slate-900 dark:text-white">Top Projects by Expense</h3>
+<button class="text-sm font-medium text-primary hover:text-primary-dark">View All</button>
+</div>
+<div class="flex flex-col gap-3">
+<!-- Project Item 1 -->
+<div class="group flex flex-col p-4 rounded-xl bg-surface-light dark:bg-surface-dark shadow-sm border border-slate-100 dark:border-slate-800 active:scale-[0.99] transition-transform">
+<div class="flex items-start justify-between mb-3">
+<div class="flex gap-3">
+<div class="size-10 rounded-lg bg-center bg-cover bg-no-repeat" data-alt="Construction site of a modern bridge structure" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD58d3_iiKzwS-toFopGcgzFLEuH0BItNVmu8TyQyTK3o1NFquTrXOhT1jfgeLxXvj5G89rid1ArLKxvwXMJ4ZK3_2pgAeqYbVh1B33aceEawygHB6lgKAWGS_Fl8F5LP0s5uGJc2u6nRdskilCmlSH8c78FfmDHSqqdu5xnO8l2MS2gtFsvXKCgwNebSnSHxOHDmIRMb2TkbgWwbIghUumappoC1m8zLqALYdaEuX-ycFKi_Fn47EGfPkl2n5obKoZusE0NBO_leCx");'>
+</div>
+<div>
+<h4 class="text-sm font-bold text-slate-900 dark:text-white">Project Alpha</h4>
+<p class="text-xs text-secondary dark:text-slate-400">Bridge Construction</p>
+</div>
+</div>
+<p class="text-sm font-bold text-slate-900 dark:text-white font-mono">$450,000</p>
+</div>
+<!-- Progress/Budget Bar -->
+<div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2">
+<div class="bg-danger h-2 rounded-full" style="width: 85%"></div>
+</div>
+<div class="flex justify-between mt-1.5">
+<span class="text-[10px] text-danger font-medium">85% of Budget</span>
+<span class="text-[10px] text-secondary dark:text-slate-500">Target: $530k</span>
+</div>
+</div>
+<!-- Project Item 2 -->
+<div class="group flex flex-col p-4 rounded-xl bg-surface-light dark:bg-surface-dark shadow-sm border border-slate-100 dark:border-slate-800 active:scale-[0.99] transition-transform">
+<div class="flex items-start justify-between mb-3">
+<div class="flex gap-3">
+<div class="size-10 rounded-lg bg-center bg-cover bg-no-repeat" data-alt="Aerial view of highway construction extension" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCnitIhW9MEDb4ZVCLDgHZI82FtPSRPCcVGQ9c_XK3-uyQl4vgtdBFN5Gwjzou_-ZHGD4cv2fSJ3sgpnil-mdI5BgBghi8UPajdyHgLMKt5ov3NKGg5XOscujNId4DV4XL1HIPeR_NkI_CQzM4TTlyxbnyK2se9k9SF7Ohirs029FBO3m8qUBTaUJEuw4gxhOyoCMeAaTWo3s09qZxb4ktBl4_fG_rYNExm6XgjScGq29RcEY0wy67rY6qVxJsbtjMwrx4ik4T7Bxnp");'>
+</div>
+<div>
+<h4 class="text-sm font-bold text-slate-900 dark:text-white">Project Beta</h4>
+<p class="text-xs text-secondary dark:text-slate-400">Highway Ext</p>
+</div>
+</div>
+<p class="text-sm font-bold text-slate-900 dark:text-white font-mono">$320,000</p>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2">
+<div class="bg-warning h-2 rounded-full" style="width: 65%"></div>
+</div>
+<div class="flex justify-between mt-1.5">
+<span class="text-[10px] text-warning font-medium">65% of Budget</span>
+<span class="text-[10px] text-secondary dark:text-slate-500">Target: $490k</span>
+</div>
+</div>
+<!-- Project Item 3 -->
+<div class="group flex flex-col p-4 rounded-xl bg-surface-light dark:bg-surface-dark shadow-sm border border-slate-100 dark:border-slate-800 active:scale-[0.99] transition-transform">
+<div class="flex items-start justify-between mb-3">
+<div class="flex gap-3">
+<div class="size-10 rounded-lg bg-center bg-cover bg-no-repeat" data-alt="Heavy machinery doing site preparation on dirt field" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuArBUiZAEdKx8QD_E28NjJ-S9Zy3NBlSv4GcEB4eL4ydBYXi0L1Tl-zCeaDlgksI0y0m_RCFRi7FZLV1d-aOkFjwjb1kVO_weNnhavU83Z80W3Y-Zfbt5edWnHkbE03FOqMTMWHQOfUNq1MUVwj-OfFBk4hD1TWrXvnLnDIUJsOR4BWE6rz1r4kmjMQfMxf34BBThQvrjV8ISai6jyG0eSujBiZdzBnM8SMYQP0hQEExu0yNxWCSkX635MG7WDOukEDlgNicgIqCAOi");'>
+</div>
+<div>
+<h4 class="text-sm font-bold text-slate-900 dark:text-white">Project Gamma</h4>
+<p class="text-xs text-secondary dark:text-slate-400">Site Prep</p>
+</div>
+</div>
+<p class="text-sm font-bold text-slate-900 dark:text-white font-mono">$110,000</p>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2">
+<div class="bg-success h-2 rounded-full" style="width: 40%"></div>
+</div>
+<div class="flex justify-between mt-1.5">
+<span class="text-[10px] text-success font-medium">40% of Budget</span>
+<span class="text-[10px] text-secondary dark:text-slate-500">Target: $275k</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 w-full bg-surface-light/90 dark:bg-surface-dark/95 backdrop-blur border-t border-slate-200 dark:border-slate-800 pb-safe pt-2 px-6 z-40">
+<div class="flex items-center justify-between max-w-lg mx-auto h-16 pb-2">
+<button class="flex flex-col items-center gap-1 text-primary w-12">
+<span class="material-symbols-outlined filled text-[26px]">grid_view</span>
+<span class="text-[10px] font-medium">Home</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 w-12 transition-colors">
+<span class="material-symbols-outlined text-[26px]">apartment</span>
+<span class="text-[10px] font-medium">Projects</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 w-12 transition-colors">
+<span class="material-symbols-outlined text-[26px]">bar_chart</span>
+<span class="text-[10px] font-medium">Reports</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 w-12 transition-colors">
+<span class="material-symbols-outlined text-[26px]">groups</span>
+<span class="text-[10px] font-medium">Team</span>
+</button>
+</div>
+</nav>
+<!-- Safe Area Padding for iPhone Home Indicator -->
+<div class="h-6 bg-transparent"></div>
+</body></html>
