@@ -12,13 +12,18 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
 
 export default function OwnerAuditLogsAdminScreen() {
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<StackNavigationProp<RootStackParamList>>();
 
   return (
     <View style={styles.root}>
       {/* Header */}
       <View style={styles.header}>
-        <Pressable style={styles.iconBtn} onPress={() => navigation.goBack()} testID="back-btn">
+        <Pressable
+          style={styles.iconBtn}
+          onPress={() => navigation.goBack()}
+          testID="back-btn"
+        >
           <Text style={styles.icon}>←</Text>
         </Pressable>
 
@@ -64,107 +69,109 @@ export default function OwnerAuditLogsAdminScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
-        {/* Stats */}
-        <View style={styles.statsRow}>
-          <View style={styles.statCard}>
-            <Text style={styles.statLabel}>Total Actions</Text>
-            <Text style={styles.statValue}>142</Text>
-            <Text style={styles.statPositive}>+12% vs last week</Text>
+      {/* Scrollable Content */}
+      <View style={{ flex: 1 }}>
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 20 }}
+          showsVerticalScrollIndicator={true}
+          bounces={true}
+        >
+          {/* Stats */}
+          <View style={styles.statsRow}>
+            <View style={styles.statCard}>
+              <Text style={styles.statLabel}>Total Actions</Text>
+              <Text style={styles.statValue}>142</Text>
+              <Text style={styles.statPositive}>+12% vs last week</Text>
+            </View>
+
+            <View style={styles.statCard}>
+              <Text style={styles.statLabel}>Critical Alerts</Text>
+              <Text style={styles.statValue}>3</Text>
+              <Text style={styles.statNegative}>Review needed</Text>
+            </View>
           </View>
 
-          <View style={styles.statCard}>
-            <Text style={styles.statLabel}>Critical Alerts</Text>
-            <Text style={styles.statValue}>3</Text>
-            <Text style={styles.statNegative}>Review needed</Text>
+          {/* Today */}
+          <View style={styles.sectionDivider}>
+            <View style={styles.divider} />
+            <Text style={styles.sectionLabel}>TODAY, OCT 24</Text>
+            <View style={styles.divider} />
           </View>
-        </View>
 
-        {/* Today */}
-        <View style={styles.sectionDivider}>
-          <View style={styles.divider} />
-          <Text style={styles.sectionLabel}>TODAY, OCT 24</Text>
-          <View style={styles.divider} />
-        </View>
+          {/* Timeline */}
+          <View style={styles.timeline}>
+            <View style={styles.timelineLine} />
 
-        {/* Timeline */}
-        <View style={styles.timeline}>
-          <View style={styles.timelineLine} />
+            <TimelineItem
+              time="09:42 AM"
+              id="#LOG-8821"
+              title="Approved Expense #4092"
+              badge="FINANCIAL"
+              badgeStyle={styles.badgeGreen}
+              description='Approved amount of ₹4,50,000 for "Heavy Machinery Rental".'
+              project="Highway 101 Expansion"
+            />
 
-          {/* Approved */}
-          <TimelineItem
-            time="09:42 AM"
-            id="#LOG-8821"
-            title="Approved Expense #4092"
-            badge="FINANCIAL"
-            badgeStyle={styles.badgeGreen}
-            description='Approved amount of $4,500.00 for "Heavy Machinery Rental".'
-            project="Highway 101 Expansion"
-          />
+            <TimelineItem
+              time="11:15 AM"
+              id="#LOG-8845"
+              title="Updated Material Specs"
+              badge="EDIT"
+              badgeStyle={styles.badgeAmber}
+              monoChanges={[
+                '- "Concrete Grade 40"',
+                '+ "Concrete Grade 50"',
+              ]}
+              project="Bridge Repair Section B"
+            />
 
-          {/* Edited */}
-          <TimelineItem
-            time="11:15 AM"
-            id="#LOG-8845"
-            title="Updated Material Specs"
-            badge="EDIT"
-            badgeStyle={styles.badgeAmber}
-            monoChanges={[
-              '- "Concrete Grade 40"',
-              '+ "Concrete Grade 50"',
-            ]}
-            project="Bridge Repair Section B"
-          />
+            <TimelineItem
+              time="01:30 PM"
+              id="#LOG-8890"
+              title="Project Created"
+              badge="CREATE"
+              badgeStyle={styles.badgeBlue}
+              description="Initialized new project workspace with standard template."
+              project="Downtown Parking Structure"
+              initials="JS"
+            />
+          </View>
 
-          {/* Created */}
-          <TimelineItem
-            time="01:30 PM"
-            id="#LOG-8890"
-            title="Project Created"
-            badge="CREATE"
-            badgeStyle={styles.badgeBlue}
-            description="Initialized new project workspace with standard template."
-            project="Downtown Parking Structure"
-            initials="JS"
-          />
-        </View>
+          {/* Yesterday */}
+          <View style={styles.sectionDivider}>
+            <View style={styles.divider} />
+            <Text style={styles.sectionLabel}>YESTERDAY, OCT 23</Text>
+            <View style={styles.divider} />
+          </View>
 
-        {/* Yesterday */}
-        <View style={styles.sectionDivider}>
-          <View style={styles.divider} />
-          <Text style={styles.sectionLabel}>YESTERDAY, OCT 23</Text>
-          <View style={styles.divider} />
-        </View>
+          <View style={styles.timeline}>
+            <View style={styles.timelineLine} />
 
-        <View style={styles.timeline}>
-          <View style={styles.timelineLine} />
+            <TimelineItem
+              time="4:55 PM"
+              id="#LOG-8712"
+              title="Contract Document Deleted"
+              badge="CRITICAL"
+              badgeStyle={styles.badgeRed}
+              project="West Side Residential"
+              strike="Draft_Agreement_v2.pdf"
+              critical
+            />
 
-          {/* Critical */}
-          <TimelineItem
-            time="4:55 PM"
-            id="#LOG-8712"
-            title="Contract Document Deleted"
-            badge="CRITICAL"
-            badgeStyle={styles.badgeRed}
-            project="West Side Residential"
-            strike="Draft_Agreement_v2.pdf"
-            critical
-          />
+            <TimelineItem
+              time="2:00 AM"
+              id="#SYS-0042"
+              title="Automated Permission Update"
+              badge="SYSTEM"
+              badgeStyle={styles.badgePurple}
+              description="Batch processed role updates for 14 active users."
+              system
+            />
+          </View>
 
-          {/* System */}
-          <TimelineItem
-            time="2:00 AM"
-            id="#SYS-0042"
-            title="Automated Permission Update"
-            badge="SYSTEM"
-            badgeStyle={styles.badgePurple}
-            description="Batch processed role updates for 14 active users."
-            system
-          />
-        </View>
-
-        <View style={{ height: 40 }} />
-      </ScrollView>
+          <View style={{ height: 40 }} />
+        </ScrollView>
+      </View>
     </View>
   );
 }
@@ -243,6 +250,10 @@ function TimelineItem({
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#f8fafc' },
+
+  scrollView: {
+    flex: 1,
+  },
 
   header: {
     flexDirection: 'row',

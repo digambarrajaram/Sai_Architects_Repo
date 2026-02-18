@@ -5,7 +5,7 @@
  */
 
 import { RouteProp } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { DateRangeFilter, ExportFormat, ExpenseCategory } from './index';
 
 // =====================================================
@@ -51,7 +51,7 @@ export type RootStackParamList = {
 
 // Generic navigation prop type
 export type ScreenNavigationProp<T extends keyof RootStackParamList> = 
-  NativeStackNavigationProp<RootStackParamList, T>;
+  StackNavigationProp<RootStackParamList, T>;
 
 // Generic route prop type
 export type ScreenRouteProp<T extends keyof RootStackParamList> = 

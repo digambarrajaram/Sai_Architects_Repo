@@ -1,0 +1,115 @@
+# Production-Grade Mobile E2E Testing Requirements
+# 
+# This file contains all Python dependencies needed for the complete
+# end-to-end mobile automation test suite with Supabase integration.
+
+# Core Testing Framework
+pytest>=7.4.0                    # Test runner and framework
+pytest-html>=3.2.0              # HTML report generation
+pytest-xdist>=3.5.0             # Parallel test execution
+pytest-timeout>=2.3.0           # Test timeout handling
+pytest-cov>=4.1.0               # Code coverage reporting
+
+# Mobile Automation
+appium-python-client>=3.0.0     # Appium WebDriver client for mobile automation
+selenium>=4.15.0                # WebDriver support and browser automation
+
+# Database Integration
+supabase>=1.6.1                 # Supabase Python client for database operations
+psycopg2-binary>=2.9.0          # PostgreSQL adapter for Python
+
+# Environment and Configuration
+python-dotenv>=1.0.0            # Environment variable loading from .env files
+
+# Enhanced Logging and Utilities
+loguru>=0.7.0                   # Enhanced logging library
+colorama>=0.4.6                 # Cross-platform colored terminal text
+
+# Data Processing and Validation
+pydantic>=2.5.0                 # Data validation and settings management
+pydantic-settings>=2.1.0      # Settings management with Pydantic
+
+# Date/Time Handling
+python-dateutil>=2.8.0          # Extended date/time parsing and manipulation
+
+# HTTP and API Testing
+requests>=2.31.0                # HTTP library for API calls
+httpx>=0.25.0                   # Modern HTTP client library
+
+# File and Path Management
+pathlib>=1.0.1                  # Object-oriented filesystem paths
+tempfile2>=0.4.0                # Enhanced temporary file handling
+
+# Image Processing (for future screenshot analysis)
+Pillow>=10.1.0                  # Python Imaging Library for image processing
+
+# Development and Debugging
+ipython>=8.17.0                 # Enhanced interactive Python shell
+ipdb>=0.13.13                   # Python debugger
+
+# Performance Monitoring
+memory-profiler>=0.61.0         # Memory usage profiling
+psutil>=5.9.0                   # System and process utilities
+
+# Optional: Advanced Features
+# Uncomment if needed for your specific use case
+
+# # Test Data Generation
+# faker>=20.1.0                   # Generate fake data for testing
+
+# # API Documentation and Testing
+# swagger-ui-py>=23.10.2          # Swagger UI for API documentation
+
+# # Database Migration and Management
+# alembic>=1.13.0                 # Database migration tool
+
+# # Performance Testing
+# locust>=2.17.0                  # Load testing tool
+
+# # Test Reporting and Analytics
+# allure-pytest>=2.13.0           # Allure reporting integration
+
+# # Security Testing
+# bandit>=1.7.5                   # Security linter for Python code
+
+# Version Pinning for Stability
+# Pin specific versions for production stability
+# Remove version pins for development to get latest features
+
+# Development Dependencies (for local development only)
+# These should be installed with --dev flag in production
+
+# Code Quality
+flake8>=6.1.0                   # Code linting
+black>=23.11.0                  # Code formatting
+isort>=5.12.0                   # Import sorting
+mypy>=1.7.0                     # Static type checking
+
+# Documentation
+sphinx>=7.2.0                   # Documentation generation
+sphinx-rtd-theme>=1.3.0         # Read the Docs theme for Sphinx
+
+# Testing Utilities
+factory-boy>=3.3.0              # Test data factories
+pytest-mock>=3.12.0             # Mocking support for pytest
+responses>=0.24.0               # Mock HTTP requests for testing
+
+# Installation Notes:
+# 
+# For production deployment:
+# pip install -r requirements.txt --no-dev
+#
+# For development environment:
+# pip install -r requirements.txt
+#
+# For specific environments:
+# pip install -r requirements.txt -c constraints.txt
+#
+# To update dependencies:
+# pip-review --auto
+#
+# To check for security vulnerabilities:
+# safety check -r requirements.txt
+#
+# To generate dependency tree:
+# pipdeptree --freeze > requirements-freeze.txt

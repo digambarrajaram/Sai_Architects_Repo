@@ -56,7 +56,8 @@ export interface UseRoleGuardReturn {
  * Use this in screens to conditionally render UI elements
  */
 export function useRoleGuard(): UseRoleGuardReturn {
-  const { role } = useAuth();
+  const { user } = useAuth();
+  const role = user?.role ?? null;
 
   const checkPermission = useCallback(
     (permission: Permission) => hasPermission(role, permission),
@@ -130,7 +131,8 @@ export function RoleGuard({
   fallback = null,
   roles,
 }: RoleGuardProps): React.ReactElement | null {
-  const { role } = useAuth();
+  const { user } = useAuth();
+  const role = user?.role ?? null;
 
   // Check by specific roles
   if (roles && roles.length > 0) {
@@ -177,7 +179,8 @@ interface OwnerOnlyProps {
  * Convenience component for Owner-only content
  */
 export function OwnerOnly({ children, fallback = null }: OwnerOnlyProps): React.ReactElement | null {
-  const { role } = useAuth();
+  const { user } = useAuth();
+  const role = user?.role ?? null;
   
   if (!isOwner(role)) {
     return fallback as React.ReactElement | null;
@@ -199,7 +202,8 @@ interface SupervisorOnlyProps {
  * Convenience component for Supervisor-only content
  */
 export function SupervisorOnly({ children, fallback = null }: SupervisorOnlyProps): React.ReactElement | null {
-  const { role } = useAuth();
+  const { user } = useAuth();
+  const role = user?.role ?? null;
   
   if (!isSupervisor(role)) {
     return fallback as React.ReactElement | null;
@@ -221,7 +225,8 @@ interface AdminOnlyProps {
  * Convenience component for Admin-only content
  */
 export function AdminOnly({ children, fallback = null }: AdminOnlyProps): React.ReactElement | null {
-  const { role } = useAuth();
+  const { user } = useAuth();
+  const role = user?.role ?? null;
   
   if (!isAdmin(role)) {
     return fallback as React.ReactElement | null;

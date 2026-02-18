@@ -61,33 +61,57 @@ function getDateRangeFromFilter(filter: DateRangeFilter): { startDate: string; e
 
 async function generateReportData(filter: ReportFilter): Promise<ReportData> {
   const project = await projectService.getProjectById(filter.projectId);
-  const totals = await projectService.getProjectTotals(filter.projectId);
+  const serviceTotals = await projectService.getProjectTotals(filter.projectId);
   
   // Get date range
   const dateRange = filter.customRange || getDateRangeFromFilter(filter.dateRange);
   
-  // Get expenses within range
-  let expenses = await expenseService.getExpensesByDateRange(
-    filter.projectId,
-    dateRange.startDate,
-    dateRange.endDate
-  );
+  // Get expenses for project and filter by date range
+  const allExpenses = await expenseService.getExpensesByProject(filter.projectId);
+  
+  // Filter by date range
+  let expenses = allExpenses.filter((e: any) => {
+    const expenseDate = new Date(e.expense_date);
+    const start = new Date(dateRange.startDate);
+    const end = new Date(dateRange.endDate);
+    return expenseDate >= start && expenseDate <= end;
+  });
 
   // Filter by categories if specified
   if (filter.categories && filter.categories.length > 0) {
-    expenses = expenses.filter(e => filter.categories!.includes(e.category));
+    expenses = expenses.filter((e: any) => filter.categories!.includes(e.category));
   }
 
+  // Map expenses to Expense type
+  const mappedExpenses: Expense[] = expenses.map((e: any) => ({
+    id: e.id,
+    projectId: e.project_id,
+    amount: e.amount,
+    description: e.category,
+    category: e.category as any,
+    date: e.expense_date,
+    createdBy: e.created_by,
+    createdAt: e.created_at,
+  }));
+
   // Calculate category breakdown
-  const categoryBreakdown = calculateCategoryBreakdown(expenses);
+  const categoryBreakdown = calculateCategoryBreakdown(mappedExpenses);
+
+  // Map totals to expected format
+  const totals = {
+    totalBudget: serviceTotals?.total_budget ?? 0,
+    totalExpenses: serviceTotals?.total_expenses ?? 0,
+    remainingBudget: serviceTotals?.remaining_budget ?? 0,
+    expenseCount: serviceTotals?.expense_count ?? 0,
+  };
 
   return {
     projectId: filter.projectId,
-    projectName: project.name,
+    projectName: project?.name ?? 'Unknown Project',
     generatedAt: new Date().toISOString(),
     filter,
     totals,
-    expenses,
+    expenses: mappedExpenses,
     categoryBreakdown,
   };
 }

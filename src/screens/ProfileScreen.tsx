@@ -11,13 +11,14 @@ import { useAuth } from '../context/AuthContext';
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
-  const { role, logout } = useAuth();
+  const { user, logout } = useAuth();
+  const role = user?.role;
 
   return (
     <View style={styles.root}>
       {/* Header */}
       <View style={styles.header}>
-        <Pressable 
+        <Pressable
           style={styles.iconBtn}
           onPress={() => navigation.goBack()}
           testID="profile-back-btn"
@@ -27,7 +28,7 @@ export default function ProfileScreen() {
 
         <Text style={styles.headerTitle}>My Profile</Text>
 
-        <Pressable 
+        <Pressable
           style={styles.iconBtn}
           testID="profile-edit-btn"
         >
@@ -35,120 +36,126 @@ export default function ProfileScreen() {
         </Pressable>
       </View>
 
-      {/* Content */}
-      <ScrollView contentContainerStyle={styles.content}>
-        {/* Profile */}
-        <View style={styles.profile}>
-          <View style={styles.avatarWrapper}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>JC</Text>
-            </View>
-            <View style={styles.verified}>
-              <Text style={styles.verifiedIcon}>✔</Text>
-            </View>
-          </View>
-
-          <Text style={styles.name}>James Carter</Text>
-          <Text style={styles.phone}>+1 (555) 123-4567</Text>
-
-          <View style={styles.roleBadge}>
-            <Text style={styles.roleText}>{role}</Text>
-          </View>
-        </View>
-
-        {/* Account Section */}
-        <View style={styles.card}>
-          <Text style={styles.cardHeader}>Account</Text>
-
-          <View style={styles.rowItem}>
-            <View style={[styles.rowIcon, styles.blueBg]}>
-              <Text style={styles.rowIconText}>🔔</Text>
-            </View>
-            <View style={styles.rowContent}>
-              <Text style={styles.rowTitle}>Notification Preferences</Text>
-              <Text style={styles.rowSub}>
-                Manage push and email alerts
-              </Text>
-            </View>
-            <Text style={styles.chevron}>›</Text>
-          </View>
-
-          <View style={styles.divider} />
-
-          <View style={styles.rowItem}>
-            <View style={[styles.rowIcon, styles.greenBg]}>
-              <Text style={styles.rowIconText}>🔒</Text>
-            </View>
-            <View style={styles.rowContent}>
-              <Text style={styles.rowTitle}>Security</Text>
-              <Text style={styles.rowSub}>
-                Password, 2FA, and sessions
-              </Text>
-            </View>
-            <Text style={styles.chevron}>›</Text>
-          </View>
-
-          <View style={styles.divider} />
-
-          <View style={styles.rowItem}>
-            <View style={[styles.rowIcon, styles.purpleBg]}>
-              <Text style={styles.rowIconText}>🌐</Text>
-            </View>
-            <View style={styles.rowContent}>
-              <Text style={styles.rowTitle}>Language & Region</Text>
-              <Text style={styles.rowSub}>English (US)</Text>
-            </View>
-            <Text style={styles.chevron}>›</Text>
-          </View>
-        </View>
-
-        {/* Support Section */}
-        <View style={styles.card}>
-          <Text style={styles.cardHeader}>Support</Text>
-
-          <View style={styles.rowItem}>
-            <View style={[styles.rowIcon, styles.amberBg]}>
-              <Text style={styles.rowIconText}>❓</Text>
-            </View>
-            <View style={styles.rowContent}>
-              <Text style={styles.rowTitle}>Help Center</Text>
-              <Text style={styles.rowSub}>
-                FAQ and customer support
-              </Text>
-            </View>
-            <Text style={styles.chevron}>›</Text>
-          </View>
-
-          <View style={styles.divider} />
-
-          <View style={styles.rowItem}>
-            <View style={[styles.rowIcon, styles.grayBg]}>
-              <Text style={styles.rowIconText}>📄</Text>
-            </View>
-            <View style={styles.rowContent}>
-              <Text style={styles.rowTitle}>Terms & Policy</Text>
-              <Text style={styles.rowSub}>Legal information</Text>
-            </View>
-            <Text style={styles.chevron}>↗</Text>
-          </View>
-        </View>
-
-        {/* Logout */}
-        <Pressable 
-          style={styles.logoutBtn}
-          onPress={logout}
-          testID="logout-btn"
+      {/* Content Wrapper */}
+      <View style={{ flex: 1 }}>
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 20 }}
+          showsVerticalScrollIndicator={true}
+          bounces={true}
         >
-          <Text style={styles.logoutIcon}>⎋</Text>
-          <Text style={styles.logoutText}>Log Out</Text>
-        </Pressable>
+          {/* Profile */}
+          <View style={styles.profile}>
+            <View style={styles.avatarWrapper}>
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>JC</Text>
+              </View>
+              <View style={styles.verified}>
+                <Text style={styles.verifiedIcon}>✔</Text>
+              </View>
+            </View>
 
-        <Text style={styles.version}>
-          Version 2.4.0 (Build 302)
-        </Text>
+            <Text style={styles.name}>James Carter</Text>
+            <Text style={styles.phone}>+1 (555) 123-4567</Text>
 
-        <View style={{ height: 80 }} />
-      </ScrollView>
+            <View style={styles.roleBadge}>
+              <Text style={styles.roleText}>{role}</Text>
+            </View>
+          </View>
+
+          {/* Account Section */}
+          <View style={styles.card}>
+            <Text style={styles.cardHeader}>Account</Text>
+
+            <View style={styles.rowItem}>
+              <View style={[styles.rowIcon, styles.blueBg]}>
+                <Text style={styles.rowIconText}>🔔</Text>
+              </View>
+              <View style={styles.rowContent}>
+                <Text style={styles.rowTitle}>Notification Preferences</Text>
+                <Text style={styles.rowSub}>
+                  Manage push and email alerts
+                </Text>
+              </View>
+              <Text style={styles.chevron}>›</Text>
+            </View>
+
+            <View style={styles.divider} />
+
+            <View style={styles.rowItem}>
+              <View style={[styles.rowIcon, styles.greenBg]}>
+                <Text style={styles.rowIconText}>🔒</Text>
+              </View>
+              <View style={styles.rowContent}>
+                <Text style={styles.rowTitle}>Security</Text>
+                <Text style={styles.rowSub}>
+                  Password, 2FA, and sessions
+                </Text>
+              </View>
+              <Text style={styles.chevron}>›</Text>
+            </View>
+
+            <View style={styles.divider} />
+
+            <View style={styles.rowItem}>
+              <View style={[styles.rowIcon, styles.purpleBg]}>
+                <Text style={styles.rowIconText}>🌐</Text>
+              </View>
+              <View style={styles.rowContent}>
+                <Text style={styles.rowTitle}>Language & Region</Text>
+                <Text style={styles.rowSub}>English (US)</Text>
+              </View>
+              <Text style={styles.chevron}>›</Text>
+            </View>
+          </View>
+
+          {/* Support Section */}
+          <View style={styles.card}>
+            <Text style={styles.cardHeader}>Support</Text>
+
+            <View style={styles.rowItem}>
+              <View style={[styles.rowIcon, styles.amberBg]}>
+                <Text style={styles.rowIconText}>❓</Text>
+              </View>
+              <View style={styles.rowContent}>
+                <Text style={styles.rowTitle}>Help Center</Text>
+                <Text style={styles.rowSub}>
+                  FAQ and customer support
+                </Text>
+              </View>
+              <Text style={styles.chevron}>›</Text>
+            </View>
+
+            <View style={styles.divider} />
+
+            <View style={styles.rowItem}>
+              <View style={[styles.rowIcon, styles.grayBg]}>
+                <Text style={styles.rowIconText}>📄</Text>
+              </View>
+              <View style={styles.rowContent}>
+                <Text style={styles.rowTitle}>Terms & Policy</Text>
+                <Text style={styles.rowSub}>Legal information</Text>
+              </View>
+              <Text style={styles.chevron}>↗</Text>
+            </View>
+          </View>
+
+          {/* Logout */}
+          <Pressable
+            style={styles.logoutBtn}
+            onPress={logout}
+            testID="logout-button"
+          >
+            <Text style={styles.logoutIcon}>⎋</Text>
+            <Text style={styles.logoutText}>Log Out</Text>
+          </Pressable>
+
+          <Text style={styles.version}>
+            Version 2.4.0 (Build 302)
+          </Text>
+
+          <View style={{ height: 80 }} />
+        </ScrollView>
+      </View>
 
       {/* Bottom Navigation */}
       <View style={styles.bottomNav}>
@@ -177,10 +184,15 @@ export default function ProfileScreen() {
   );
 }
 
+
 const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: '#f6f7f8',
+  },
+
+  scrollView: {
+    flex: 1,
   },
 
   header: {

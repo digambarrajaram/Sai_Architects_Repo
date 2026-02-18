@@ -1,0 +1,146 @@
+name: Selenium Test CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        browser: [chrome, firefox]
+        environment: [dev, qa]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        
+    - name: Install Chrome (for Chrome tests)
+      if: matrix.browser == 'chrome'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
+        
+    - name: Install Firefox (for Firefox tests)
+      if: matrix.browser == 'firefox'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y firefox
+        
+    - name: Run tests
+      run: |
+        pytest tests/ \
+          --browser=${{ matrix.browser }} \
+          --env=${{ matrix.environment }} \
+          --retry=2 \
+          --html=reports/pytest_report_${{ matrix.browser }}_${{ matrix.environment }}.html \
+          --self-contained-html \
+          -v
+      env:
+        BROWSER: ${{ matrix.browser }}
+        ENVIRONMENT: ${{ matrix.environment }}
+        
+    - name: Upload test reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: test-reports-${{ matrix.browser }}-${{ matrix.environment }}
+        path: reports/
+        
+    - name: Upload screenshots (if any)
+      uses: actions/upload-artifact@v3
+      if: failure()
+      with:
+        name: screenshots-${{ matrix.browser }}-${{ matrix.environment }}
+        path: screenshots/
+
+  parallel-tests:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        
+    - name: Install Chrome
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
+        
+    - name: Run parallel tests
+      run: |
+        pytest tests/ \
+          --browser=chrome \
+          --env=dev \
+          --retry=2 \
+          --html=reports/pytest_report_parallel.html \
+          --self-contained-html \
+          -n auto \
+          -v
+          
+    - name: Upload parallel test reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: parallel-test-reports
+        path: reports/
+
+  smoke-tests:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        
+    - name: Install Chrome
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
+        
+    - name: Run smoke tests only
+      run: |
+        pytest tests/ \
+          --browser=chrome \
+          --env=dev \
+          --retry=2 \
+          --html=reports/pytest_report_smoke.html \
+          --self-contained-html \
+          -m smoke \
+          -v
+          
+    - name: Upload smoke test reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: smoke-test-reports
+        path: reports/

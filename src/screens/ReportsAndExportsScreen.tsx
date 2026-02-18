@@ -11,13 +11,18 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
 
 export default function ReportsAndExportsScreen() {
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<StackNavigationProp<RootStackParamList>>();
 
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Pressable style={styles.iconBtn} onPress={() => navigation.goBack()} testID="back-btn">
+        <Pressable
+          style={styles.iconBtn}
+          onPress={() => navigation.goBack()}
+          testID="back-btn"
+        >
           <Text>←</Text>
         </Pressable>
 
@@ -26,151 +31,159 @@ export default function ReportsAndExportsScreen() {
         <View style={{ width: 32 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
-        {/* Intro */}
-        <View style={styles.intro}>
-          <Text style={styles.pageTitle}>Export Data</Text>
-          <Text style={styles.pageSubtitle}>
-            Select report type and date range.
-          </Text>
-        </View>
+      {/* Scrollable Area */}
+      <View style={{ flex: 1 }}>
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 120 }}
+          showsVerticalScrollIndicator={true}
+          bounces={true}
+        >
+          {/* Intro */}
+          <View style={styles.intro}>
+            <Text style={styles.pageTitle}>Export Data</Text>
+            <Text style={styles.pageSubtitle}>
+              Select report type and date range.
+            </Text>
+          </View>
 
-        {/* Report Type */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>REPORT TYPE</Text>
+          {/* Report Type */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>REPORT TYPE</Text>
 
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={styles.cardRow}>
-              {/* Active Card */}
-              <View style={[styles.reportCard, styles.reportCardActive]}>
-                <View style={styles.cardIconActive}>
-                  <Text>🏢</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+            >
+              <View style={styles.cardRow}>
+                {/* Active Card */}
+                <View style={[styles.reportCard, styles.reportCardActive]}>
+                  <View style={styles.cardIconActive}>
+                    <Text>🏢</Text>
+                  </View>
+                  <View>
+                    <Text style={styles.cardMetaActive}>Project</Text>
+                    <Text style={styles.cardTitleActive}>Expense</Text>
+                  </View>
+                  <View style={styles.checkBadge}>
+                    <Text style={styles.checkText}>✓</Text>
+                  </View>
                 </View>
-                <View>
-                  <Text style={styles.cardMetaActive}>Project</Text>
-                  <Text style={styles.cardTitleActive}>Expense</Text>
+
+                {/* Other Cards */}
+                <View style={styles.reportCard}>
+                  <View style={styles.cardIcon}>
+                    <Text>📊</Text>
+                  </View>
+                  <View>
+                    <Text style={styles.cardMeta}>Finance</Text>
+                    <Text style={styles.cardTitle}>Profit & Loss</Text>
+                  </View>
                 </View>
-                <View style={styles.checkBadge}>
-                  <Text style={styles.checkText}>✓</Text>
+
+                <View style={styles.reportCard}>
+                  <View style={styles.cardIcon}>
+                    <Text>⏱</Text>
+                  </View>
+                  <View>
+                    <Text style={styles.cardMeta}>Team</Text>
+                    <Text style={styles.cardTitle}>Time Summary</Text>
+                  </View>
+                </View>
+              </View>
+            </ScrollView>
+          </View>
+
+          {/* Scope & Period */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>SCOPE & PERIOD</Text>
+
+            <View style={styles.inputBlock}>
+              <Text style={styles.inputLabel}>Select Project</Text>
+              <View style={styles.selectBox}>
+                <Text style={styles.selectText}>Skyline Tower A</Text>
+                <Text style={styles.selectArrow}>⌄</Text>
+              </View>
+            </View>
+
+            <View style={styles.dateRow}>
+              <View style={styles.dateBox}>
+                <Text style={styles.inputLabel}>Start Date</Text>
+                <View style={styles.selectBox}>
+                  <Text style={styles.selectText}>Sep 01, 2023</Text>
                 </View>
               </View>
 
-              {/* Other Cards */}
-              <View style={styles.reportCard}>
-                <View style={styles.cardIcon}>
+              <View style={styles.dateBox}>
+                <Text style={styles.inputLabel}>End Date</Text>
+                <View style={styles.selectBox}>
+                  <Text style={styles.selectText}>Sep 30, 2023</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+
+          {/* Format */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>FORMAT</Text>
+
+            <View style={styles.formatRow}>
+              <View style={[styles.formatChip, styles.formatActive]}>
+                <Text style={styles.formatTextActive}>PDF</Text>
+              </View>
+              <View style={styles.formatChip}>
+                <Text style={styles.formatText}>Excel</Text>
+              </View>
+              <View style={styles.formatChip}>
+                <Text style={styles.formatText}>CSV</Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.divider} />
+
+          {/* Recent Exports */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionLabel}>RECENT EXPORTS</Text>
+              <Text style={styles.link}>View All</Text>
+            </View>
+
+            <View style={styles.exportItem}>
+              <View style={styles.exportLeft}>
+                <View style={[styles.fileIcon, { backgroundColor: '#fee2e2' }]}>
+                  <Text>📄</Text>
+                </View>
+                <View>
+                  <Text style={styles.fileName}>
+                    Skyline_Exp_Aug.pdf
+                  </Text>
+                  <Text style={styles.fileMeta}>
+                    Aug 01 - Aug 31 • 2.4 MB
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.downloadIcon}>⬇</Text>
+            </View>
+
+            <View style={styles.exportItem}>
+              <View style={styles.exportLeft}>
+                <View style={[styles.fileIcon, { backgroundColor: '#dcfce7' }]}>
                   <Text>📊</Text>
                 </View>
                 <View>
-                  <Text style={styles.cardMeta}>Finance</Text>
-                  <Text style={styles.cardTitle}>Profit & Loss</Text>
+                  <Text style={styles.fileName}>
+                    Full_Summary_Q2.xlsx
+                  </Text>
+                  <Text style={styles.fileMeta}>
+                    Apr 01 - Jun 30 • 5.1 MB
+                  </Text>
                 </View>
               </View>
-
-              <View style={styles.reportCard}>
-                <View style={styles.cardIcon}>
-                  <Text>⏱</Text>
-                </View>
-                <View>
-                  <Text style={styles.cardMeta}>Team</Text>
-                  <Text style={styles.cardTitle}>Time Summary</Text>
-                </View>
-              </View>
-            </View>
-          </ScrollView>
-        </View>
-
-        {/* Scope & Period */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>SCOPE & PERIOD</Text>
-
-          <View style={styles.inputBlock}>
-            <Text style={styles.inputLabel}>Select Project</Text>
-            <View style={styles.selectBox}>
-              <Text style={styles.selectText}>Skyline Tower A</Text>
-              <Text style={styles.selectArrow}>⌄</Text>
+              <Text style={styles.downloadIcon}>⬇</Text>
             </View>
           </View>
-
-          <View style={styles.dateRow}>
-            <View style={styles.dateBox}>
-              <Text style={styles.inputLabel}>Start Date</Text>
-              <View style={styles.selectBox}>
-                <Text style={styles.selectText}>Sep 01, 2023</Text>
-              </View>
-            </View>
-
-            <View style={styles.dateBox}>
-              <Text style={styles.inputLabel}>End Date</Text>
-              <View style={styles.selectBox}>
-                <Text style={styles.selectText}>Sep 30, 2023</Text>
-              </View>
-            </View>
-          </View>
-        </View>
-
-        {/* Format */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>FORMAT</Text>
-
-          <View style={styles.formatRow}>
-            <View style={[styles.formatChip, styles.formatActive]}>
-              <Text style={styles.formatTextActive}>PDF</Text>
-            </View>
-            <View style={styles.formatChip}>
-              <Text style={styles.formatText}>Excel</Text>
-            </View>
-            <View style={styles.formatChip}>
-              <Text style={styles.formatText}>CSV</Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.divider} />
-
-        {/* Recent Exports */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionLabel}>RECENT EXPORTS</Text>
-            <Text style={styles.link}>View All</Text>
-          </View>
-
-          <View style={styles.exportItem}>
-            <View style={styles.exportLeft}>
-              <View style={[styles.fileIcon, { backgroundColor: '#fee2e2' }]}>
-                <Text>📄</Text>
-              </View>
-              <View>
-                <Text style={styles.fileName}>
-                  Skyline_Exp_Aug.pdf
-                </Text>
-                <Text style={styles.fileMeta}>
-                  Aug 01 - Aug 31 • 2.4 MB
-                </Text>
-              </View>
-            </View>
-            <Text style={styles.downloadIcon}>⬇</Text>
-          </View>
-
-          <View style={styles.exportItem}>
-            <View style={styles.exportLeft}>
-              <View style={[styles.fileIcon, { backgroundColor: '#dcfce7' }]}>
-                <Text>📊</Text>
-              </View>
-              <View>
-                <Text style={styles.fileName}>
-                  Full_Summary_Q2.xlsx
-                </Text>
-                <Text style={styles.fileMeta}>
-                  Apr 01 - Jun 30 • 5.1 MB
-                </Text>
-              </View>
-            </View>
-            <Text style={styles.downloadIcon}>⬇</Text>
-          </View>
-        </View>
-
-        <View style={{ height: 120 }} />
-      </ScrollView>
+        </ScrollView>
+      </View>
 
       {/* Footer */}
       <View style={styles.footer}>
@@ -186,6 +199,10 @@ export default function ReportsAndExportsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f6f7f8' },
+
+  scrollView: {
+    flex: 1,
+  },
 
   header: {
     flexDirection: 'row',

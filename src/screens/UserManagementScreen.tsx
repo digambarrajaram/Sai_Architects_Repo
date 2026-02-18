@@ -15,7 +15,7 @@ export default function UserManagementScreen() {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Pressable 
+        <Pressable
           style={styles.iconBtn}
           onPress={() => navigation.goBack()}
           testID="back-btn"
@@ -41,90 +41,96 @@ export default function UserManagementScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
-        {/* Active Users */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionLabel}>
-            Active Users (4)
-          </Text>
-          <Text style={styles.filterText}>Filter</Text>
-        </View>
+      <View style={{ flex: 1 }}>
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 20 }}
+          showsVerticalScrollIndicator={true}
+          bounces={true}
+        >
+          {/* Active Users */}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionLabel}>
+              Active Users (4)
+            </Text>
+            <Text style={styles.filterText}>Filter</Text>
+          </View>
 
-        {/* Current User */}
-        <View style={styles.userCard}>
-          <View style={styles.avatar} />
-          <View style={styles.userInfo}>
-            <Text style={styles.userName}>John Doe (You)</Text>
-            <Text style={styles.userPhone}>+1 555-0123</Text>
+          {/* Current User */}
+          <View style={styles.userCard}>
+            <View style={styles.avatar} />
+            <View style={styles.userInfo}>
+              <Text style={styles.userName}>John Doe (You)</Text>
+              <Text style={styles.userPhone}>+1 555-0123</Text>
+            </View>
+            <View style={styles.roleBadgePrimary}>
+              <Text style={styles.roleTextPrimary}>Owner</Text>
+            </View>
           </View>
-          <View style={styles.roleBadgePrimary}>
-            <Text style={styles.roleTextPrimary}>Owner</Text>
-          </View>
-        </View>
 
-        {/* User 1 */}
-        <View style={styles.userCard}>
-          <View style={styles.avatar} />
-          <View style={styles.userInfo}>
-            <Text style={styles.userName}>Jane Smith</Text>
-            <Text style={styles.userPhone}>+1 555-0987</Text>
+          {/* User 1 */}
+          <View style={styles.userCard}>
+            <View style={styles.avatar} />
+            <View style={styles.userInfo}>
+              <Text style={styles.userName}>Jane Smith</Text>
+              <Text style={styles.userPhone}>+1 555-0987</Text>
+            </View>
+            <View style={styles.roleDropdown}>
+              <Text style={styles.roleText}>Supervisor</Text>
+              <Text style={styles.dropdownIcon}>⌄</Text>
+            </View>
           </View>
-          <View style={styles.roleDropdown}>
-            <Text style={styles.roleText}>Supervisor</Text>
-            <Text style={styles.dropdownIcon}>⌄</Text>
-          </View>
-        </View>
 
-        {/* User 2 */}
-        <View style={styles.userCard}>
-          <View style={styles.avatar} />
-          <View style={styles.userInfo}>
-            <Text style={styles.userName}>Robert Johnson</Text>
-            <Text style={styles.userPhone}>+1 555-4567</Text>
+          {/* User 2 */}
+          <View style={styles.userCard}>
+            <View style={styles.avatar} />
+            <View style={styles.userInfo}>
+              <Text style={styles.userName}>Robert Johnson</Text>
+              <Text style={styles.userPhone}>+1 555-4567</Text>
+            </View>
+            <View style={styles.roleDropdown}>
+              <Text style={styles.roleText}>Supervisor</Text>
+              <Text style={styles.dropdownIcon}>⌄</Text>
+            </View>
           </View>
-          <View style={styles.roleDropdown}>
-            <Text style={styles.roleText}>Supervisor</Text>
-            <Text style={styles.dropdownIcon}>⌄</Text>
-          </View>
-        </View>
 
-        {/* User 3 */}
-        <View style={styles.userCard}>
-          <View style={styles.avatar} />
-          <View style={styles.userInfo}>
-            <Text style={styles.userName}>Sarah Connor</Text>
-            <Text style={styles.userPhone}>+1 555-9988</Text>
+          {/* User 3 */}
+          <View style={styles.userCard}>
+            <View style={styles.avatar} />
+            <View style={styles.userInfo}>
+              <Text style={styles.userName}>Sarah Connor</Text>
+              <Text style={styles.userPhone}>+1 555-9988</Text>
+            </View>
+            <View style={styles.roleDropdownPrimary}>
+              <Text style={styles.roleTextPrimary}>Owner</Text>
+              <Text style={styles.dropdownIconPrimary}>⌄</Text>
+            </View>
           </View>
-          <View style={styles.roleDropdownPrimary}>
-            <Text style={styles.roleTextPrimary}>Owner</Text>
-            <Text style={styles.dropdownIconPrimary}>⌄</Text>
-          </View>
-        </View>
 
-        {/* Pending Invites */}
-        <View style={[styles.sectionHeader, { marginTop: 24 }]}>
-          <Text style={styles.sectionLabel}>
-            Pending Invites (1)
-          </Text>
-        </View>
-
-        <View style={[styles.userCard, styles.pendingCard]}>
-          <View style={styles.pendingAvatar}>
-            <Text style={styles.pendingIcon}>👤</Text>
-          </View>
-          <View style={styles.userInfo}>
-            <Text style={styles.userName}>Michael Chen</Text>
-            <Text style={styles.userPhone}>
-              Invited via email
+          {/* Pending Invites */}
+          <View style={[styles.sectionHeader, { marginTop: 24 }]}>
+            <Text style={styles.sectionLabel}>
+              Pending Invites (1)
             </Text>
           </View>
-          <Pressable>
-            <Text style={styles.removeIcon}>✕</Text>
-          </Pressable>
-        </View>
 
-        <View style={{ height: 120 }} />
-      </ScrollView>
+          <View style={[styles.userCard, styles.pendingCard]}>
+            <View style={styles.pendingAvatar}>
+              <Text style={styles.pendingIcon}>👤</Text>
+            </View>
+            <View style={styles.userInfo}>
+              <Text style={styles.userName}>Michael Chen</Text>
+              <Text style={styles.userPhone}>
+                Invited via email
+              </Text>
+            </View>
+            <Pressable>
+              <Text style={styles.removeIcon}>✕</Text>
+            </Pressable>
+          </View>
+
+          <View style={{ height: 120 }} />
+        </ScrollView>
+      </View>
     </View>
   );
 }
@@ -133,6 +139,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f6f7f8',
+  },
+
+  scrollView: {
+    flex: 1,
   },
 
   header: {
@@ -197,14 +207,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 
-  content: {
-    paddingHorizontal: 16,
-  },
-
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 8,
+    paddingHorizontal: 16,
   },
   sectionLabel: {
     fontSize: 12,
@@ -228,6 +235,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#f1f5f9',
     marginBottom: 10,
+    marginHorizontal: 16,
   },
   avatar: {
     width: 48,

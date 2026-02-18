@@ -5,26 +5,67 @@ import {
   ScrollView,
   StyleSheet,
   Pressable,
+  DimensionValue,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
 
+type Project = {
+  name: string;
+  amount: string;
+  pct: string;
+  color: string;
+};
+
 export default function FinancialDashboardOwnerScreen() {
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<StackNavigationProp<RootStackParamList>>();
+
+  const projects: Project[] = [
+    {
+      name: 'Project Alpha',
+      amount: '₹4,50,00,000',
+      pct: '85%',
+      color: '#ef4444',
+    },
+    {
+      name: 'Project Beta',
+      amount: '₹3,20,00,000',
+      pct: '65%',
+      color: '#f59e0b',
+    },
+    {
+      name: 'Project Gamma',
+      amount: '₹1,10,00,000',
+      pct: '40%',
+      color: '#10b981',
+    },
+  ];
+
+  const legendData: Project[] = [
+    { name: 'Materials', amount: '', pct: '45%', color: '#136dec' },
+    { name: 'Labor', amount: '', pct: '30%', color: '#f59e0b' },
+    { name: 'Logistics', amount: '', pct: '25%', color: '#ef4444' },
+  ];
 
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerTop}>
-          <Pressable style={styles.iconBtn} onPress={() => navigation.goBack()} testID="back-btn">
+          <Pressable
+            style={styles.iconBtn}
+            onPress={() => navigation.goBack()}
+            testID="back-btn"
+          >
             <Text>←</Text>
           </Pressable>
+
           <View style={styles.profileRow}>
-            <Pressable 
-              style={styles.avatar} 
-              onPress={() => navigation.navigate('Profile')} 
+            <Pressable
+              style={styles.avatar}
+              onPress={() => navigation.navigate('Profile')}
             />
             <View>
               <Text style={styles.greeting}>Good Morning,</Text>
@@ -54,141 +95,156 @@ export default function FinancialDashboardOwnerScreen() {
         </ScrollView>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
-        {/* Hero KPI */}
-        <View style={styles.heroCard}>
-          <Text style={styles.kpiLabel}>Net Profit (YTD)</Text>
-          <Text style={styles.kpiValue}>$1,240,500</Text>
+      {/* Scrollable Content */}
+      <View style={{ flex: 1 }}>
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 120 }}
+          showsVerticalScrollIndicator
+        >
+          {/* Hero KPI */}
+          <View style={styles.heroCard}>
+            <Text style={styles.kpiLabel}>Net Profit (YTD)</Text>
+            <Text style={styles.kpiValue}>₹12,40,50,000</Text>
 
-          <View style={styles.kpiRow}>
-            <View style={styles.kpiItem}>
-              <Text style={styles.kpiSub}>Revenue</Text>
-              <Text style={styles.kpiSubValue}>$4.5M</Text>
-            </View>
-            <View style={styles.dividerVertical} />
-            <View style={styles.kpiItem}>
-              <Text style={styles.kpiSub}>Expenses</Text>
-              <Text style={styles.kpiSubValue}>$3.2M</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Financial Performance (Bar Chart Representation) */}
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardTitle}>Financial Performance</Text>
-            <Text style={styles.trend}>+12%</Text>
-          </View>
-
-          <View style={styles.barChart}>
-            {['2021', '2022', '2023'].map((year, i) => (
-              <View key={year} style={styles.barGroup}>
-                <View style={styles.barStack}>
-                  <View
-                    style={[
-                      styles.incomeBar,
-                      { height: [45, 65, 85][i] },
-                    ]}
-                  />
-                  <View
-                    style={[
-                      styles.expenseBar,
-                      { height: [35, 50, 60][i] },
-                    ]}
-                  />
-                </View>
-                <Text
-                  style={[
-                    styles.barLabel,
-                    i === 2 && styles.barLabelActive,
-                  ]}
-                >
-                  {year}
-                </Text>
+            <View style={styles.kpiRow}>
+              <View style={styles.kpiItem}>
+                <Text style={styles.kpiSub}>Revenue</Text>
+                <Text style={styles.kpiSubValue}>₹45Cr</Text>
               </View>
-            ))}
-          </View>
-        </View>
 
-        {/* Expense Distribution */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Expense Distribution</Text>
+              <View style={styles.dividerVertical} />
 
-          <View style={styles.donutRow}>
-            <View style={styles.donut}>
-              <View style={styles.donutHole}>
-                <Text style={styles.donutText}>Total</Text>
+              <View style={styles.kpiItem}>
+                <Text style={styles.kpiSub}>Expenses</Text>
+                <Text style={styles.kpiSubValue}>₹32Cr</Text>
               </View>
             </View>
+          </View>
 
-            <View style={styles.legend}>
-              {[
-                ['Materials', '45%', '#136dec'],
-                ['Labor', '30%', '#f59e0b'],
-                ['Logistics', '25%', '#ef4444'],
-              ].map(([label, value, color]) => (
-                <View key={label} style={styles.legendRow}>
-                  <View style={[styles.legendDot, { backgroundColor: color }]} />
-                  <Text style={styles.legendLabel}>{label}</Text>
-                  <Text style={styles.legendValue}>{value}</Text>
+          {/* Financial Performance */}
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <Text style={styles.cardTitle}>Financial Performance</Text>
+              <Text style={styles.trend}>+12%</Text>
+            </View>
+
+            <View style={styles.barChart}>
+              {['2021', '2022', '2023'].map((year, i) => (
+                <View key={year} style={styles.barGroup}>
+                  <View style={styles.barStack}>
+                    <View
+                      style={[
+                        styles.incomeBar,
+                        { height: [45, 65, 85][i] },
+                      ]}
+                    />
+                    <View
+                      style={[
+                        styles.expenseBar,
+                        { height: [35, 50, 60][i] },
+                      ]}
+                    />
+                  </View>
+                  <Text
+                    style={[
+                      styles.barLabel,
+                      i === 2 && styles.barLabelActive,
+                    ]}
+                  >
+                    {year}
+                  </Text>
                 </View>
               ))}
             </View>
           </View>
-        </View>
 
-        {/* Top Projects */}
-        <View>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>
-              Top Projects by Expense
-            </Text>
-            <Text style={styles.link}>View All</Text>
-          </View>
+          {/* Expense Distribution */}
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Expense Distribution</Text>
 
-          {[
-            ['Project Alpha', '$450,000', '85%', '#ef4444'],
-            ['Project Beta', '$320,000', '65%', '#f59e0b'],
-            ['Project Gamma', '$110,000', '40%', '#10b981'],
-          ].map(([name, amount, pct, color]) => (
-              <View key={name} style={styles.projectCard}>
-              <View style={styles.projectTop}>
-                <Text style={styles.projectName}>{name}</Text>
-                <Text style={styles.projectAmount}>{amount}</Text>
+            <View style={styles.donutRow}>
+              <View style={styles.donut}>
+                <View style={styles.donutHole}>
+                  <Text style={styles.donutText}>Total</Text>
+                </View>
               </View>
-              <View style={styles.progressBar}>
-                <View
-                  style={[
-                    styles.progressFill,
-                    // @ts-ignore
-                    { width: pct, backgroundColor: color },
-                  ]}
-                />
-              </View>
-              <View style={styles.projectFooter}>
-                <Text style={[styles.pctText, { color }]}>
-                  {pct} of Budget
-                </Text>
-                <Text style={styles.targetText}>Target set</Text>
+
+              <View style={styles.legend}>
+                {legendData.map(item => (
+                  <View key={item.name} style={styles.legendRow}>
+                    <View
+                      style={[
+                        styles.legendDot,
+                        { backgroundColor: item.color },
+                      ]}
+                    />
+                    <Text style={styles.legendLabel}>{item.name}</Text>
+                    <Text style={styles.legendValue}>{item.pct}</Text>
+                  </View>
+                ))}
               </View>
             </View>
-          ))}
-        </View>
+          </View>
 
-        <View style={{ height: 120 }} />
-      </ScrollView>
+          {/* Top Projects */}
+          <View>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>
+                Top Projects by Expense
+              </Text>
+              <Text style={styles.link}>View All</Text>
+            </View>
+
+            {projects.map(project => (
+              <View key={project.name} style={styles.projectCard}>
+                <View style={styles.projectTop}>
+                  <Text style={styles.projectName}>{project.name}</Text>
+                  <Text style={styles.projectAmount}>{project.amount}</Text>
+                </View>
+
+                <View style={styles.progressBar}>
+                  <View
+                    style={[
+                      styles.progressFill,
+                      {
+                        width: project.pct as DimensionValue,
+                        backgroundColor: project.color,
+                      },
+                    ]}
+                  />
+                </View>
+
+                <View style={styles.projectFooter}>
+                  <Text
+                    style={[
+                      styles.pctText,
+                      { color: project.color },
+                    ]}
+                  >
+                    {project.pct} of Budget
+                  </Text>
+                  <Text style={styles.targetText}>Target set</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        </ScrollView>
+      </View>
 
       {/* Bottom Navigation */}
       <View style={styles.bottomNav}>
         {['Home', 'Projects', 'Reports', 'Team'].map((tab, i) => (
-          <Pressable 
-            key={tab} 
+          <Pressable
+            key={tab}
             style={styles.navItem}
             testID={`tab-${tab}`}
             onPress={() => {
-              if (tab === 'Projects' || tab === 'Home') navigation.navigate('ProjectList');
-              if (tab === 'Reports') navigation.navigate('ProjectDashboard', { projectId: 'global' });
-              if (tab === 'Team') navigation.navigate('UserManagement');
+              if (tab === 'Projects' || tab === 'Home')
+                navigation.navigate('ProjectList');
+              if (tab === 'Reports')
+                navigation.navigate('ProjectDashboard', { projectId: 'global' });
+              if (tab === 'Team')
+                navigation.navigate('UserManagement');
             }}
           >
             <Text
@@ -208,6 +264,10 @@ export default function FinancialDashboardOwnerScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f6f7f8' },
+
+  scrollView: {
+    flex: 1,
+  },
 
   header: {
     paddingTop: 40,

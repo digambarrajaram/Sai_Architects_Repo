@@ -1,158 +1,126 @@
 /**
  * CivManager - Project Service
- * Mock data and async simulation for projects
- * NO backend logic - frontend only
+ * Production-ready Supabase integration with proper error handling
  */
 
-import {
-  Project,
-  ProjectStatus,
-  ProjectTotals,
-  ProjectMetadata,
-} from '../types';
+import { supabase, isSupabaseConfigured, logSupabaseError } from './supabaseClient';
 
 // =====================================================
-// MOCK DATA
+// TYPES (Backend-Aligned)
 // =====================================================
 
-const MOCK_PROJECTS: Project[] = [
+export interface Project {
+  id: string;
+  name: string;
+  status: 'active' | 'planning' | 'completed' | 'on_hold';
+  due_date: string;
+  budget: number;
+  created_by: string;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface ProjectWithExpenses extends Project {
+  total_expenses: number;
+  expense_count: number;
+  remaining_budget: number;
+}
+
+export interface ProjectTotals {
+  total_budget: number;
+  total_expenses: number;
+  remaining_budget: number;
+  expense_count: number;
+}
+
+export interface ProjectFilter {
+  status?: string;
+  search?: string;
+}
+
+// =====================================================
+// ERROR HANDLING
+// =====================================================
+
+export class ProjectServiceError extends Error {
+  constructor(
+    message: string,
+    public code: string,
+    public originalError?: unknown
+  ) {
+    super(message);
+    this.name = 'ProjectServiceError';
+  }
+}
+
+// =====================================================
+// MOCK DATA (for development/fallback)
+// =====================================================
+
+// Use a mutable array for mock data so new projects can be added
+let MOCK_PROJECTS: ProjectWithExpenses[] = [
   {
-    id: 'proj-001',
-    name: 'Highway Bridge Construction',
-    description: 'Construction of a 500m highway bridge over the river',
-    status: ProjectStatus.IN_PROGRESS,
-    startDate: '2024-01-15',
-    endDate: '2024-12-31',
-    budget: 5000000,
-    location: 'Mumbai, Maharashtra',
-    clientName: 'NHAI',
-    createdAt: '2024-01-10T10:00:00Z',
-    updatedAt: '2024-06-15T14:30:00Z',
+    id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    name: 'Downtown Office Complex',
+    status: 'active',
+    due_date: '2026-06-30',
+    budget: 500000,
+    created_by: '11111111-1111-1111-1111-111111111111',
+    created_at: '2026-01-01T10:00:00Z',
+    total_expenses: 205000,
+    expense_count: 2,
+    remaining_budget: 295000,
   },
   {
-    id: 'proj-002',
-    name: 'Commercial Complex Foundation',
-    description: 'Foundation work for a 20-story commercial building',
-    status: ProjectStatus.IN_PROGRESS,
-    startDate: '2024-03-01',
-    endDate: '2024-09-30',
-    budget: 2500000,
-    location: 'Pune, Maharashtra',
-    clientName: 'ABC Developers',
-    createdAt: '2024-02-20T09:00:00Z',
-    updatedAt: '2024-06-10T11:00:00Z',
+    id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+    name: 'Residential Tower Phase 1',
+    status: 'active',
+    due_date: '2026-09-15',
+    budget: 750000,
+    created_by: '11111111-1111-1111-1111-111111111111',
+    created_at: '2026-01-15T10:00:00Z',
+    total_expenses: 0,
+    expense_count: 0,
+    remaining_budget: 750000,
   },
   {
-    id: 'proj-003',
-    name: 'Residential Township Roads',
-    description: 'Internal road network for a 100-acre township',
-    status: ProjectStatus.PLANNING,
-    startDate: '2024-07-01',
-    budget: 1500000,
-    location: 'Nashik, Maharashtra',
-    clientName: 'XYZ Housing',
-    createdAt: '2024-05-15T08:00:00Z',
-    updatedAt: '2024-06-01T16:00:00Z',
-  },
-  {
-    id: 'proj-004',
-    name: 'Dam Repair Works',
-    description: 'Structural repairs and waterproofing of existing dam',
-    status: ProjectStatus.ON_HOLD,
-    startDate: '2024-02-01',
-    budget: 3000000,
-    location: 'Aurangabad, Maharashtra',
-    clientName: 'State Water Board',
-    createdAt: '2024-01-25T12:00:00Z',
-    updatedAt: '2024-04-20T10:00:00Z',
-  },
-  {
-    id: 'proj-005',
-    name: 'Metro Station Construction',
-    description: 'Underground metro station with 4 platforms',
-    status: ProjectStatus.IN_PROGRESS,
-    startDate: '2023-06-01',
-    endDate: '2025-06-30',
-    budget: 15000000,
-    location: 'Mumbai, Maharashtra',
-    clientName: 'MMRDA',
-    createdAt: '2023-05-01T10:00:00Z',
-    updatedAt: '2024-06-18T09:00:00Z',
+    id: 'cccccccc-cccc-cccc-cccc-cccccccccccc',
+    name: 'Shopping Mall Renovation',
+    status: 'planning',
+    due_date: '2026-12-01',
+    budget: 300000,
+    created_by: '22222222-2222-2222-2222-222222222222',
+    created_at: '2026-02-01T10:00:00Z',
+    total_expenses: 0,
+    expense_count: 0,
+    remaining_budget: 300000,
   },
 ];
 
-const MOCK_TOTALS: Record<string, ProjectTotals> = {
-  'proj-001': {
-    totalBudget: 5000000,
-    totalExpenses: 2350000,
-    remainingBudget: 2650000,
-    expenseCount: 45,
-    profitLoss: 150000,
-  },
-  'proj-002': {
-    totalBudget: 2500000,
-    totalExpenses: 1200000,
-    remainingBudget: 1300000,
-    expenseCount: 28,
-    profitLoss: 75000,
-  },
-  'proj-003': {
-    totalBudget: 1500000,
-    totalExpenses: 50000,
-    remainingBudget: 1450000,
-    expenseCount: 5,
-    profitLoss: 0,
-  },
-  'proj-004': {
-    totalBudget: 3000000,
-    totalExpenses: 800000,
-    remainingBudget: 2200000,
-    expenseCount: 15,
-    profitLoss: -50000,
-  },
-  'proj-005': {
-    totalBudget: 15000000,
-    totalExpenses: 9500000,
-    remainingBudget: 5500000,
-    expenseCount: 120,
-    profitLoss: 500000,
-  },
+// Check if we should use mock data (when Supabase is not configured or fails)
+// Uses the centralized configuration check from supabaseClient
+const shouldUseMockData = (): boolean => {
+  return !isSupabaseConfigured();
 };
 
-const MOCK_METADATA: Record<string, ProjectMetadata> = {
-  'proj-001': {
-    lastExpenseDate: '2024-06-15',
-    supervisorCount: 3,
-    documentCount: 25,
-  },
-  'proj-002': {
-    lastExpenseDate: '2024-06-10',
-    supervisorCount: 2,
-    documentCount: 18,
-  },
-  'proj-003': {
-    lastExpenseDate: '2024-06-01',
-    supervisorCount: 1,
-    documentCount: 8,
-  },
-  'proj-004': {
-    lastExpenseDate: '2024-04-15',
-    supervisorCount: 2,
-    documentCount: 12,
-  },
-  'proj-005': {
-    lastExpenseDate: '2024-06-18',
-    supervisorCount: 5,
-    documentCount: 85,
-  },
+// Helper function to check if user is authenticated before making Supabase requests
+const checkAuthSession = async (): Promise<boolean> => {
+  try {
+    const { data: session } = await supabase.auth.getSession();
+    if (!session.session) {
+      if (__DEV__) {
+        console.log('[ProjectService] User not authenticated - returning empty results');
+      }
+      return false;
+    }
+    return true;
+  } catch (error) {
+    if (__DEV__) {
+      console.error('[ProjectService] Auth session check error:', error);
+    }
+    return false;
+  }
 };
-
-// =====================================================
-// ASYNC SIMULATION HELPER
-// =====================================================
-
-const simulateDelay = (ms: number = 500): Promise<void> =>
-  new Promise(resolve => setTimeout(resolve, ms));
 
 // =====================================================
 // PROJECT SERVICE
@@ -160,125 +128,488 @@ const simulateDelay = (ms: number = 500): Promise<void> =>
 
 export const projectService = {
   /**
-   * Get all projects
+   * Get all projects for the current user
+   * Uses RLS to filter by user access
    */
-  async getAllProjects(): Promise<Project[]> {
-    await simulateDelay(800);
-    return [...MOCK_PROJECTS];
-  },
-
-  /**
-   * Get project by ID
-   */
-  async getProjectById(projectId: string): Promise<Project> {
-    await simulateDelay(500);
-    const project = MOCK_PROJECTS.find(p => p.id === projectId);
-    if (!project) {
-      throw new Error(`Project not found: ${projectId}`);
+  async getProjects(userId?: string, filters?: ProjectFilter): Promise<ProjectWithExpenses[]> {
+    // Use mock data if Supabase is not configured
+    if (shouldUseMockData()) {
+      if (__DEV__) {
+        console.log('[ProjectService] Using mock data (Supabase not configured)');
+        console.log('[ProjectService] Current MOCK_PROJECTS count:', MOCK_PROJECTS.length);
+      }
+      let filtered = [...MOCK_PROJECTS];
+      
+      if (filters?.status && filters.status !== 'All') {
+        const statusMap: Record<string, string> = {
+          'In Progress': 'active',
+          'Planning': 'planning',
+          'Completed': 'completed',
+          'On Hold': 'on_hold',
+        };
+        const status = statusMap[filters.status] || filters.status.toLowerCase().replace(' ', '_');
+        filtered = filtered.filter(p => p.status === status);
+      }
+      
+      if (filters?.search) {
+        filtered = filtered.filter(p => 
+          p.name.toLowerCase().includes(filters.search!.toLowerCase())
+        );
+      }
+      
+      if (__DEV__) {
+        console.log('[ProjectService] Returning', filtered.length, 'projects');
+      }
+      
+      return filtered;
     }
-    return { ...project };
+
+    // Check if user is authenticated before making Supabase requests
+    const isAuthenticated = await checkAuthSession();
+    if (!isAuthenticated) {
+      return [];
+    }
+    
+    try {
+      // Build query - only select columns that exist in the database schema
+      // NOTE: 'updated_at' is NOT in the schema, removed to prevent 400 error
+      // NOTE: 'expenses' join requires the table to exist with proper foreign key
+      let query = supabase
+        .from('projects')
+        .select(`
+          id,
+          name,
+          status,
+          due_date,
+          budget,
+          created_by,
+          created_at,
+          expenses(id, amount)
+        `)
+        .order('created_at', { ascending: false });
+
+      // Apply status filter with proper value mapping
+      // UI shows: "In Progress", "Planning", "Completed", "On Hold"
+      // DB stores: "active", "planning", "completed", "on_hold"
+      if (filters?.status && filters.status !== 'All') {
+        const statusMap: Record<string, string> = {
+          'In Progress': 'active',
+          'Planning': 'planning',
+          'Completed': 'completed',
+          'On Hold': 'on_hold',
+          'in_progress': 'active',
+        };
+        const dbStatus = statusMap[filters.status] || filters.status.toLowerCase().replace(' ', '_');
+        query = query.eq('status', dbStatus);
+      }
+
+      if (filters?.search) {
+        query = query.ilike('name', `%${filters.search}%`);
+      }
+
+      const { data, error } = await query;
+
+      // Enhanced error logging for debugging
+      if (error) {
+        logSupabaseError('getProjects', error);
+        throw new ProjectServiceError(
+          `Failed to fetch projects: ${error.message}`,
+          'FETCH_ERROR',
+          error
+        );
+      }
+
+      if (!data) {
+        return [];
+      }
+
+      // Transform data to include calculated expense totals
+      // NOTE: PostgreSQL NUMERIC type is returned as string in JSON
+      // We need to convert budget and amount to numbers
+      const projectsWithExpenses: ProjectWithExpenses[] = data.map((project: any) => {
+        const expenses = project.expenses || [];
+        // Convert amount from string to number (PostgreSQL NUMERIC behavior)
+        const totalExpenses = expenses.reduce(
+          (sum: number, exp: any) => sum + parseFloat(exp.amount || 0),
+          0
+        );
+        // Convert budget from string to number
+        const budget = parseFloat(project.budget || 0);
+
+        return {
+          id: project.id,
+          name: project.name,
+          status: project.status,
+          due_date: project.due_date,
+          budget: budget,
+          created_by: project.created_by,
+          created_at: project.created_at,
+          updated_at: project.updated_at, // Will be undefined if not in schema
+          total_expenses: totalExpenses,
+          expense_count: expenses.length,
+          remaining_budget: budget - totalExpenses,
+        };
+      });
+
+      if (__DEV__) {
+        console.log('[ProjectService] Fetched projects:', projectsWithExpenses.length);
+      }
+
+      return projectsWithExpenses;
+    } catch (error) {
+      if (error instanceof ProjectServiceError) {
+        throw error;
+      }
+      throw new ProjectServiceError(
+        'Unexpected error fetching projects',
+        'UNEXPECTED_ERROR',
+        error
+      );
+    }
   },
 
   /**
-   * Get project totals (budget, expenses, etc.)
+   * Get a single project by ID with expense totals
+   */
+  async getProjectById(projectId: string): Promise<ProjectWithExpenses | null> {
+    // Use mock data if Supabase is not configured
+    if (shouldUseMockData()) {
+      if (__DEV__) {
+        console.log('[ProjectService] Using mock data for project:', projectId);
+      }
+      return MOCK_PROJECTS.find(p => p.id === projectId) || null;
+    }
+    
+    try {
+      // Use .maybeSingle() instead of .single() to avoid 406 errors
+      // .single() throws PGRST116 if no rows or multiple rows found
+      // .maybeSingle() returns null if no rows, throws if multiple
+      const { data, error } = await supabase
+        .from('projects')
+        .select(`
+          id,
+          name,
+          status,
+          due_date,
+          budget,
+          created_by,
+          created_at,
+          expenses(id, amount)
+        `)
+        .eq('id', projectId)
+        .maybeSingle();
+
+      if (error) {
+        // Enhanced error logging
+        if (__DEV__) {
+          console.error('[ProjectService] Supabase error in getProjectById:', {
+            code: error.code,
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+          });
+        }
+        throw new ProjectServiceError(
+          `Failed to fetch project: ${error.message}`,
+          'FETCH_ERROR',
+          error
+        );
+      }
+
+      if (!data) {
+        return null;
+      }
+
+      // Calculate expense totals
+      // NOTE: PostgreSQL NUMERIC type is returned as string in JSON
+      const expenses = data.expenses || [];
+      const totalExpenses = expenses.reduce(
+        (sum: number, exp: any) => sum + parseFloat(exp.amount || 0),
+        0
+      );
+      const budget = parseFloat(data.budget || 0);
+
+      const project: ProjectWithExpenses = {
+        id: data.id,
+        name: data.name,
+        status: data.status,
+        due_date: data.due_date,
+        budget: budget,
+        created_by: data.created_by,
+        created_at: data.created_at,
+        updated_at: (data as any).updated_at, // Optional field, may not exist in schema
+        total_expenses: totalExpenses,
+        expense_count: expenses.length,
+        remaining_budget: budget - totalExpenses,
+      };
+
+      if (__DEV__) {
+        console.log('[ProjectService] Fetched project:', project.id, project.name);
+      }
+
+      return project;
+    } catch (error) {
+      if (error instanceof ProjectServiceError) {
+        throw error;
+      }
+      throw new ProjectServiceError(
+        'Unexpected error fetching project',
+        'UNEXPECTED_ERROR',
+        error
+      );
+    }
+  },
+
+  /**
+   * Get project totals (for dashboard views)
    */
   async getProjectTotals(projectId: string): Promise<ProjectTotals> {
-    await simulateDelay(300);
-    const totals = MOCK_TOTALS[projectId];
-    if (!totals) {
+    try {
+      // Get project budget
+      const { data: project, error: projectError } = await supabase
+        .from('projects')
+        .select('budget')
+        .eq('id', projectId)
+        .single();
+
+      if (projectError) {
+        throw new ProjectServiceError(
+          `Failed to fetch project budget: ${projectError.message}`,
+          'FETCH_ERROR',
+          projectError
+        );
+      }
+
+      // Get expense totals
+      const { data: expenses, error: expensesError } = await supabase
+        .from('expenses')
+        .select('amount')
+        .eq('project_id', projectId);
+
+      if (expensesError) {
+        throw new ProjectServiceError(
+          `Failed to fetch expenses: ${expensesError.message}`,
+          'FETCH_ERROR',
+          expensesError
+        );
+      }
+
+      const totalExpenses = (expenses || []).reduce(
+        (sum, exp) => sum + (exp.amount || 0),
+        0
+      );
+      const budget = project?.budget || 0;
+
       return {
-        totalBudget: 0,
-        totalExpenses: 0,
-        remainingBudget: 0,
-        expenseCount: 0,
+        total_budget: budget,
+        total_expenses: totalExpenses,
+        remaining_budget: budget - totalExpenses,
+        expense_count: expenses?.length || 0,
       };
+    } catch (error) {
+      if (error instanceof ProjectServiceError) {
+        throw error;
+      }
+      throw new ProjectServiceError(
+        'Unexpected error fetching project totals',
+        'UNEXPECTED_ERROR',
+        error
+      );
     }
-    return { ...totals };
   },
 
   /**
-   * Get project metadata
-   */
-  async getProjectMetadata(projectId: string): Promise<ProjectMetadata> {
-    await simulateDelay(200);
-    const metadata = MOCK_METADATA[projectId];
-    if (!metadata) {
-      return {
-        supervisorCount: 0,
-        documentCount: 0,
-      };
-    }
-    return { ...metadata };
-  },
-
-  /**
-   * Search projects by name or description
-   */
-  async searchProjects(query: string): Promise<Project[]> {
-    await simulateDelay(400);
-    const lowerQuery = query.toLowerCase();
-    return MOCK_PROJECTS.filter(
-      p =>
-        p.name.toLowerCase().includes(lowerQuery) ||
-        p.description.toLowerCase().includes(lowerQuery)
-    );
-  },
-
-  /**
-   * Filter projects by status
-   */
-  async filterProjectsByStatus(status: ProjectStatus): Promise<Project[]> {
-    await simulateDelay(300);
-    return MOCK_PROJECTS.filter(p => p.status === status);
-  },
-
-  /**
-   * Create a new project (mock)
+   * Create a new project
    */
   async createProject(
-    project: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>
+    projectData: Omit<Project, 'id' | 'created_at' | 'updated_at'>
   ): Promise<Project> {
-    await simulateDelay(600);
-    const newProject: Project = {
-      ...project,
-      id: `proj-${Date.now()}`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    MOCK_PROJECTS.push(newProject);
-    return newProject;
+    // Use mock mode if Supabase is not configured
+    if (shouldUseMockData()) {
+      if (__DEV__) {
+        console.log('[ProjectService] Creating project in mock mode');
+      }
+      
+      const newProject: Project = {
+        id: `mock-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        name: projectData.name,
+        status: projectData.status || 'planning',
+        due_date: projectData.due_date,
+        budget: projectData.budget,
+        created_by: projectData.created_by,
+        created_at: new Date().toISOString(),
+      };
+      
+      // Add to mock data
+      const newProjectWithExpenses: ProjectWithExpenses = {
+        ...newProject,
+        total_expenses: 0,
+        expense_count: 0,
+        remaining_budget: projectData.budget,
+      };
+      MOCK_PROJECTS.unshift(newProjectWithExpenses);
+      
+      if (__DEV__) {
+        console.log('[ProjectService] Created mock project:', newProject.id, newProject.name);
+      }
+      
+      return newProject;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .insert({
+          name: projectData.name,
+          status: projectData.status || 'planning',
+          due_date: projectData.due_date,
+          budget: projectData.budget,
+          created_by: projectData.created_by,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        throw new ProjectServiceError(
+          `Failed to create project: ${error.message}`,
+          'CREATE_ERROR',
+          error
+        );
+      }
+
+      if (__DEV__) {
+        console.log('[ProjectService] Created project:', data.id, data.name);
+      }
+
+      return data;
+    } catch (error) {
+      if (error instanceof ProjectServiceError) {
+        throw error;
+      }
+      throw new ProjectServiceError(
+        'Unexpected error creating project',
+        'UNEXPECTED_ERROR',
+        error
+      );
+    }
   },
 
   /**
-   * Update a project (mock)
+   * Update an existing project
    */
   async updateProject(
     projectId: string,
-    updates: Partial<Project>
+    updates: Partial<Omit<Project, 'id' | 'created_at' | 'created_by'>>
   ): Promise<Project> {
-    await simulateDelay(500);
-    const index = MOCK_PROJECTS.findIndex(p => p.id === projectId);
-    if (index === -1) {
-      throw new Error(`Project not found: ${projectId}`);
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', projectId)
+        .select()
+        .single();
+
+      if (error) {
+        throw new ProjectServiceError(
+          `Failed to update project: ${error.message}`,
+          'UPDATE_ERROR',
+          error
+        );
+      }
+
+      if (__DEV__) {
+        console.log('[ProjectService] Updated project:', projectId);
+      }
+
+      return data;
+    } catch (error) {
+      if (error instanceof ProjectServiceError) {
+        throw error;
+      }
+      throw new ProjectServiceError(
+        'Unexpected error updating project',
+        'UNEXPECTED_ERROR',
+        error
+      );
     }
-    MOCK_PROJECTS[index] = {
-      ...MOCK_PROJECTS[index],
-      ...updates,
-      updatedAt: new Date().toISOString(),
-    };
-    return { ...MOCK_PROJECTS[index] };
   },
 
   /**
-   * Delete a project (mock)
+   * Delete a project
    */
   async deleteProject(projectId: string): Promise<void> {
-    await simulateDelay(400);
-    const index = MOCK_PROJECTS.findIndex(p => p.id === projectId);
-    if (index === -1) {
-      throw new Error(`Project not found: ${projectId}`);
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', projectId);
+
+      if (error) {
+        throw new ProjectServiceError(
+          `Failed to delete project: ${error.message}`,
+          'DELETE_ERROR',
+          error
+        );
+      }
+
+      if (__DEV__) {
+        console.log('[ProjectService] Deleted project:', projectId);
+      }
+    } catch (error) {
+      if (error instanceof ProjectServiceError) {
+        throw error;
+      }
+      throw new ProjectServiceError(
+        'Unexpected error deleting project',
+        'UNEXPECTED_ERROR',
+        error
+      );
     }
-    MOCK_PROJECTS.splice(index, 1);
+  },
+
+  /**
+   * Subscribe to project changes (real-time)
+   * Returns a no-op unsubscribe function if Supabase is not configured
+   */
+  subscribeToProjects(
+    userId: string,
+    on_change: (payload: any) => void
+  ): () => void {
+    // Return no-op if Supabase is not configured
+    if (shouldUseMockData()) {
+      if (__DEV__) {
+        console.log('[ProjectService] Real-time subscriptions disabled (using mock data)');
+      }
+      return () => {
+        // No-op unsubscribe for mock mode
+      };
+    }
+
+    const channel = supabase
+      .channel('projects-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'projects',
+        },
+        (payload) => {
+          if (__DEV__) {
+            console.log('[ProjectService] Real-time update:', payload.eventType);
+          }
+          on_change(payload);
+        }
+      )
+      .subscribe();
+
+    // Return unsubscribe function
+    return () => {
+      supabase.removeChannel(channel);
+    };
   },
 };
 

@@ -7,3 +7,10 @@ export { projectService } from './projectService';
 export { expenseService } from './expenseService';
 export { exportService } from './exportService';
 export { auditLogService } from './auditLogService';
+export { 
+  supabase, 
+  isSupabaseConfigured, 
+  testSupabaseConnection,
+  testDatabaseQuery,
+  logSupabaseError
+} from './supabaseClient';

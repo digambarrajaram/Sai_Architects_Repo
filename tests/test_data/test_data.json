@@ -1,0 +1,90 @@
+{
+  "valid_users": [
+    {
+      "username": "testuser1",
+      "password": "TestPass123!",
+      "name": "Test User 1",
+      "email": "testuser1@example.com"
+    },
+    {
+      "username": "testuser2", 
+      "password": "TestPass456!",
+      "name": "Test User 2",
+      "email": "testuser2@example.com"
+    },
+    {
+      "username": "admin",
+      "password": "AdminPass123!",
+      "name": "Admin User",
+      "email": "admin@example.com"
+    }
+  ],
+  "invalid_users": [
+    {
+      "username": "invaliduser",
+      "password": "wrongpass",
+      "expected_error": "Invalid credentials"
+    },
+    {
+      "username": "nonexistent",
+      "password": "anypass",
+      "expected_error": "User not found"
+    }
+  ],
+  "edge_cases": [
+    {
+      "username": "",
+      "password": "anypass",
+      "expected_error": "Username required"
+    },
+    {
+      "username": "testuser",
+      "password": "",
+      "expected_error": "Password required"
+    },
+    {
+      "username": " ",
+      "password": " ",
+      "expected_error": "Invalid credentials"
+    },
+    {
+      "username": "test@user.com",
+      "password": "TestPass123!",
+      "expected_error": null
+    },
+    {
+      "username": "testuser",
+      "password": "123",
+      "expected_error": "Invalid credentials"
+    }
+  ],
+  "form_validations": [
+    {
+      "username": "a",
+      "password": "a",
+      "expected_error": "Username too short"
+    },
+    {
+      "username": "testuserwithaverylongnamethatexceedstheusuallimits",
+      "password": "TestPass123!",
+      "expected_error": "Username too long"
+    },
+    {
+      "username": "testuser",
+      "password": "12345",
+      "expected_error": "Password too weak"
+    }
+  ],
+  "special_characters": [
+    {
+      "username": "test_user-123",
+      "password": "TestPass123!",
+      "expected_error": null
+    },
+    {
+      "username": "test@#$%^&*()",
+      "password": "TestPass123!",
+      "expected_error": "Invalid username format"
+    }
+  ]
+}

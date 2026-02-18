@@ -1,11 +1,21 @@
 {
-  "android": {
-    "package": "com.anonymous.sai_app"
-  },
   "expo": {
-    "newArchEnabled": false,
+    "name": "Sai App",
+    "slug": "sai_app",
+    "version": "2.4.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
     "android": {
       "package": "com.anonymous.sai_app"
+    },
+    "splash": {
+      "backgroundColor": "#FFFFFF",
+      "resizeMode": "contain"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "736e369c-63b4-4ec6-90d6-d6cdf33c9d1d"
+      }
     }
   }
 }

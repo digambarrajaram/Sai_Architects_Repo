@@ -1,35 +1,19 @@
-/**
- * CivManager - App Navigator
- * Uses CANONICAL screens only (per audit report)
- * 
- * CANONICAL SCREENS:
- * - LoginScreen
- * - ProjectListScreen (handles role-based routing internally)
- * - ProjectDetailOwnerScreen
- * - ProjectDetailSupervisorScreen
- * - AddProjectExpenseScreen
- * - FinancialDashboardOwnerScreen
- * - OwnerAuditLogsAdminScreen
- * - ReportsAndExportsScreen
- * - ProfileScreen
- * - UserManagementScreen
- */
-
-import React, { forwardRef, Ref } from 'react';
-import { NavigationContainer, NavigationContainerRef } from '@react-navigation/native';
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { useAuth } from '../context/AuthContext';
-import { UserRole } from '../types';
 
-// Types
+import { useAuth } from '../context/AuthContext';
+import { UserRole } from './types';
+import { navigationRef } from './NavigationService';
 import type { RootStackParamList } from './types';
 
-// Canonical Screens
+/* Screens */
 import LoginScreen from '../screens/LoginScreen';
 import ProjectListScreen from '../screens/ProjectListScreen';
 import ProjectDetailOwnerScreen from '../screens/ProjectDetailOwnerScreen';
 import ProjectDetailSupervisorScreen from '../screens/ProjectDetailSupervisorScreen';
 import AddProjectExpenseScreen from '../screens/AddProjectExpenseScreen';
+import AddProjectScreen from '../screens/AddProjectScreen';
 import FinancialDashboardOwnerScreen from '../screens/FinancialDashboardOwnerScreen';
 import OwnerAuditLogsAdminScreen from '../screens/OwnerAuditLogsAdminScreen';
 import ReportsAndExportsScreen from '../screens/ReportsAndExportsScreen';
@@ -38,42 +22,102 @@ import UserManagementScreen from '../screens/UserManagementScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
-const AppNavigator = forwardRef<NavigationContainerRef<RootStackParamList>, {}>(
-  (_props, ref: Ref<NavigationContainerRef<RootStackParamList>>) => {
-    const { isAuthenticated, role } = useAuth();
+export default function AppNavigator() {
+  const { isAuthenticated, user } = useAuth();
 
-    return (
-      <NavigationContainer ref={ref}>
-        <Stack.Navigator
-          screenOptions={{ headerShown: false }}
-        >
-          {!isAuthenticated ? (
-            <Stack.Screen name="Auth" component={LoginScreen} />
-          ) : (
-            <>
-              <Stack.Screen name="ProjectList" component={ProjectListScreen} />
-              <Stack.Screen name="Profile" component={ProfileScreen} />
-              
-              {role === UserRole.OWNER ? (
-                <>
-                  <Stack.Screen name="ProjectDetailOwner" component={ProjectDetailOwnerScreen} />
-                  <Stack.Screen name="ProjectDashboard" component={FinancialDashboardOwnerScreen} />
-                  <Stack.Screen name="ProjectAuditLogs" component={OwnerAuditLogsAdminScreen} />
-                  <Stack.Screen name="ProjectReports" component={ReportsAndExportsScreen} />
-                  <Stack.Screen name="UserManagement" component={UserManagementScreen} />
-                </>
-              ) : (
-                <>
-                  <Stack.Screen name="ProjectDetailSupervisor" component={ProjectDetailSupervisorScreen} />
-                </>
-              )}
-              <Stack.Screen name="AddExpense" component={AddProjectExpenseScreen} />
-            </>
-          )}
-        </Stack.Navigator>
-      </NavigationContainer>
-    );
-  }
-);
+  // Get user role from user object (default to SUPERVISOR if null)
+  const role = user?.role || UserRole.SUPERVISOR;
 
-export default AppNavigator;
+  return (
+    <NavigationContainer ref={navigationRef}>
+      {/* Key prop ensures navigator resets when auth state changes */}
+      <Stack.Navigator 
+        key={isAuthenticated ? 'authenticated' : 'unauthenticated'}
+        screenOptions={{ headerShown: false }}
+      >
+        {!isAuthenticated ? (
+          <Stack.Screen 
+            name="Auth" 
+            component={LoginScreen} 
+            options={{ title: 'Login', headerShown: false }}
+          />
+        ) : (
+          <>
+            <Stack.Screen 
+              name="ProjectList" 
+              component={ProjectListScreen} 
+              options={{ 
+                title: 'Projects', 
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen 
+              name="Profile" 
+              component={ProfileScreen} 
+              options={{ 
+                title: 'Profile', 
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen 
+              name="AddProject" 
+              component={AddProjectScreen} 
+              options={{ 
+                title: 'New Project', 
+                headerShown: false,
+              }}
+            />
+
+            {role === UserRole.OWNER ? (
+              <>
+                <Stack.Screen 
+                  name="ProjectDetailOwner" 
+                  component={ProjectDetailOwnerScreen} 
+                  options={{ title: 'Project Details', headerShown: false }}
+                />
+                <Stack.Screen 
+                  name="ProjectDashboard" 
+                  component={FinancialDashboardOwnerScreen} 
+                  options={{ 
+                    title: 'Dashboard', 
+                    headerShown: false,
+                  }}
+                />
+                <Stack.Screen 
+                  name="ProjectAuditLogs" 
+                  component={OwnerAuditLogsAdminScreen} 
+                  options={{ title: 'Audit Logs', headerShown: false }}
+                />
+                <Stack.Screen 
+                  name="ProjectReports" 
+                  component={ReportsAndExportsScreen} 
+                  options={{ 
+                    title: 'Reports', 
+                    headerShown: false,
+                  }}
+                />
+                <Stack.Screen 
+                  name="UserManagement" 
+                  component={UserManagementScreen} 
+                  options={{ title: 'User Management', headerShown: false }}
+                />
+              </>
+            ) : (
+              <Stack.Screen
+                name="ProjectDetailSupervisor"
+                component={ProjectDetailSupervisorScreen}
+                options={{ title: 'Project Details', headerShown: false }}
+              />
+            )}
+
+            <Stack.Screen 
+              name="AddExpense" 
+              component={AddProjectExpenseScreen} 
+              options={{ title: 'Add Expense', headerShown: false }}
+            />
+          </>
+        )}
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}

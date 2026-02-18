@@ -119,7 +119,8 @@ interface ProjectProviderProps {
 }
 
 export function ProjectProvider({ children, initialProjectId }: ProjectProviderProps) {
-  const { role } = useAuth();
+  const { user } = useAuth();
+  const role = user?.role ?? null;
   
   // State
   const [projectId, setProjectIdState] = useState<string | null>(initialProjectId || null);
@@ -161,15 +162,38 @@ export function ProjectProvider({ children, initialProjectId }: ProjectProviderP
     setError(null);
 
     try {
-      const [projectData, totalsData, metadataData] = await Promise.all([
+      const [projectData, totalsData] = await Promise.all([
         projectService.getProjectById(projectId),
         projectService.getProjectTotals(projectId),
-        projectService.getProjectMetadata(projectId),
       ]);
 
-      setProject(projectData);
-      setTotals(totalsData);
-      setMetadata(metadataData);
+      // Map service response to context Project type
+      if (projectData) {
+        setProject({
+          id: projectData.id,
+          name: projectData.name,
+          description: '',
+          status: projectData.status as any,
+          startDate: projectData.created_at,
+          endDate: projectData.due_date,
+          budget: projectData.budget,
+          createdAt: projectData.created_at,
+          updatedAt: projectData.updated_at || projectData.created_at,
+        });
+      }
+      
+      // Map service totals to context ProjectTotals type
+      if (totalsData) {
+        setTotals({
+          totalBudget: totalsData.total_budget,
+          totalExpenses: totalsData.total_expenses,
+          remainingBudget: totalsData.remaining_budget,
+          expenseCount: totalsData.expense_count,
+        });
+      }
+      
+      // Use default metadata since getProjectMetadata doesn't exist
+      setMetadata(defaultMetadata);
       setLoadingState('success');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load project';
@@ -189,7 +213,18 @@ export function ProjectProvider({ children, initialProjectId }: ProjectProviderP
 
     try {
       const expensesData = await expenseService.getExpensesByProject(projectId);
-      setExpenses(expensesData);
+      // Map BackendExpense to Expense type
+      const mappedExpenses: Expense[] = expensesData.map(exp => ({
+        id: exp.id,
+        projectId: exp.project_id,
+        amount: exp.amount,
+        description: exp.category,
+        category: exp.category as any,
+        date: exp.expense_date,
+        createdBy: exp.created_by,
+        createdAt: exp.created_at,
+      }));
+      setExpenses(mappedExpenses);
       setExpensesLoadingState('success');
     } catch (err) {
       setExpensesLoadingState('error');
@@ -201,11 +236,25 @@ export function ProjectProvider({ children, initialProjectId }: ProjectProviderP
       if (!projectId) throw new Error('No project selected');
 
       const newExpense = await expenseService.createExpense({
-        ...expense,
-        projectId,
+        project_id: projectId,
+        amount: expense.amount,
+        category: expense.category,
+        expense_date: expense.date,
       });
 
-      setExpenses(prev => [newExpense, ...prev]);
+      // Map BackendExpense to Expense type
+      const mappedExpense: Expense = {
+        id: newExpense.id,
+        projectId: newExpense.project_id,
+        amount: newExpense.amount,
+        description: newExpense.category,
+        category: newExpense.category as any,
+        date: newExpense.expense_date,
+        createdBy: newExpense.created_by,
+        createdAt: newExpense.created_at,
+      };
+
+      setExpenses(prev => [mappedExpense, ...prev]);
       
       // Update totals
       if (totals) {
@@ -222,10 +271,26 @@ export function ProjectProvider({ children, initialProjectId }: ProjectProviderP
 
   const updateExpense = useCallback(
     async (expenseId: string, updates: Partial<Expense>) => {
-      const updatedExpense = await expenseService.updateExpense(expenseId, updates);
+      const updatedExpense = await expenseService.updateExpense(expenseId, {
+        amount: updates.amount,
+        category: updates.category,
+        expense_date: updates.date,
+      });
+
+      // Map BackendExpense to Expense type
+      const mappedExpense: Expense = {
+        id: updatedExpense.id,
+        projectId: updatedExpense.project_id,
+        amount: updatedExpense.amount,
+        description: updatedExpense.category,
+        category: updatedExpense.category as any,
+        date: updatedExpense.expense_date,
+        createdBy: updatedExpense.created_by,
+        createdAt: updatedExpense.created_at,
+      };
 
       setExpenses(prev =>
-        prev.map(exp => (exp.id === expenseId ? updatedExpense : exp))
+        prev.map(exp => (exp.id === expenseId ? mappedExpense : exp))
       );
 
       // Refresh totals if amount changed

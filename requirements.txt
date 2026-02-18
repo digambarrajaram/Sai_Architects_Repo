@@ -1,0 +1,16 @@
+# Selenium Automation Framework Requirements
+# Core testing framework
+pytest==8.3.4
+pytest-html==4.1.1
+pytest-xdist==3.6.1
+pytest-timeout==2.3.1
+
+# Selenium and browser management
+selenium==4.26.0
+webdriver-manager==4.0.1
+
+# Utilities
+python-dotenv==1.1.1
+
+# Optional: For better logging
+loguru==0.7.2

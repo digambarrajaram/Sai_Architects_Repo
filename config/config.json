@@ -1,0 +1,52 @@
+{
+  "environments": {
+    "dev": {
+      "base_url": "https://dev.example.com",
+      "timeout": 10,
+      "implicit_wait": 0
+    },
+    "qa": {
+      "base_url": "https://qa.example.com", 
+      "timeout": 15,
+      "implicit_wait": 0
+    },
+    "prod": {
+      "base_url": "https://example.com",
+      "timeout": 20,
+      "implicit_wait": 0
+    }
+  },
+  "browsers": {
+    "chrome": {
+      "name": "chrome",
+      "headless": false,
+      "maximize": true,
+      "window_size": "1920,1080"
+    },
+    "firefox": {
+      "name": "firefox", 
+      "headless": false,
+      "maximize": true,
+      "window_size": "1920,1080"
+    }
+  },
+  "test_data": {
+    "valid_user": {
+      "username": "testuser",
+      "password": "testpass123"
+    },
+    "invalid_user": {
+      "username": "invaliduser",
+      "password": "wrongpass"
+    },
+    "empty_credentials": {
+      "username": "",
+      "password": ""
+    }
+  },
+  "execution": {
+    "max_retries": 2,
+    "retry_delay": 1,
+    "parallel_workers": 4
+  }
+}

@@ -6,39 +6,79 @@ import {
   TextInput,
   Pressable,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList, UserRole } from '../navigation/types';
+import { RootStackParamList } from '../navigation/types';
 import { useAuth } from '../context/AuthContext';
+import { isSupabaseConfigured } from '../services/supabaseClient';
 
 export default function LoginScreen() {
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const { login } = useAuth();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const navigation =
+    useNavigation<StackNavigationProp<RootStackParamList>>();
+  const { signIn, isLoading: authLoading } = useAuth();
 
-  const handleLogin = () => {
-    // Determine role based on username for demo/testing
-    const role = username.toLowerCase().includes('owner') 
-      ? UserRole.OWNER 
-      : UserRole.SUPERVISOR;
-    
-    login(role);
-    // Navigation will be handled by AppNavigator observing isAuthenticated
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const isFormValid =
+    email.trim().length > 0 && password.length >= 6;
+
+  const handleLogin = async () => {
+    setError('');
+
+    if (!email.trim()) {
+      setError('Email is required.');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await signIn(email.trim(), password);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : 'Login failed. Please try again.';
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const showDemoHint = !isSupabaseConfigured();
+
   return (
-    <View style={styles.root}>
-      <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.root}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <View style={{ flex: 1 }}>
         <ScrollView
-          contentContainerStyle={styles.main}
+          contentContainerStyle={{ paddingBottom: 20 }}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator
         >
-          {/* App Branding */}
+          {/* Branding */}
           <View style={styles.branding}>
             <View style={styles.logo}>
-              <Text style={styles.logoIcon}>🏗️</Text>
+              <Text style={styles.logoIcon}>Construction</Text>
             </View>
             <Text style={styles.appName}>SAI ARCHITECT'S</Text>
             <Text style={styles.tagline}>
@@ -46,270 +86,255 @@ export default function LoginScreen() {
             </Text>
           </View>
 
-          {/* Login Form */}
+          {/* Form */}
           <View style={styles.form}>
-            {/* Email / Username */}
             <View style={styles.field}>
-              <Text style={styles.label}>
-                Work Email
-              </Text>
-              <View style={styles.inputWrapper}>
-                <Text style={styles.inputIcon}>👤</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter your ID"
-                  placeholderTextColor="#94a3b8"
-                  value={username}
-                  onChangeText={setUsername}
-                  autoCapitalize="none"
-                  testID="username-input"
-                />
-              </View>
+              <Text style={styles.label}>Email Address</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your email"
+                value={email}
+                onChangeText={t => {
+                  setEmail(t);
+                  setError('');
+                }}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                autoCorrect={false}
+              />
             </View>
 
-            {/* Password */}
             <View style={styles.field}>
               <Text style={styles.label}>Password</Text>
-              <View style={styles.inputWrapper}>
-                <Text style={styles.inputIcon}>🔒</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="••••••••"
-                  placeholderTextColor="#94a3b8"
-                  secureTextEntry
-                  value={password}
-                  onChangeText={setPassword}
-                  testID="password-input"
-                />
-              </View>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your password"
+                secureTextEntry
+                value={password}
+                onChangeText={setPassword}
+              />
             </View>
 
-            {/* Remember / Forgot */}
-            <View style={styles.row}>
-              <View style={styles.rememberRow}>
-                <View style={styles.checkbox} />
-                <Text style={styles.rememberText}>
-                  Remember me
+            {error ? (
+              <Text style={styles.error}>{error}</Text>
+            ) : null}
+
+            <Pressable
+              style={[
+                styles.button,
+                (!isFormValid || loading || authLoading) &&
+                  styles.buttonDisabled,
+              ]}
+              onPress={handleLogin}
+              disabled={!isFormValid || loading || authLoading}
+            >
+              {loading || authLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>
+                  Sign In Securely
+                </Text>
+              )}
+            </Pressable>
+
+            <Text style={styles.forgot}>
+              Forgot password?
+            </Text>
+
+            {showDemoHint && (
+              <View style={styles.demoHint}>
+                <Text style={styles.demoHintTitle}>
+                  Demo Mode
+                </Text>
+                <Text style={styles.demoHintText}>
+                  Test credentials:{'\n'}
+                  owner@test.com / owner123{'\n'}
+                  supervisor@test.com /
+                  supervisor123
                 </Text>
               </View>
-              <Text style={styles.link}>
-                Forgot password?
-              </Text>
-            </View>
+            )}
+          </View>
 
-            {/* Submit */}
-            <Pressable 
-              style={styles.primaryButton}
-              onPress={handleLogin}
-              testID="login-button"
-            >
-              <Text style={styles.primaryButtonText}>
-                Sign In securely
-              </Text>
-            </Pressable>
+          {/* Footer */}
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>
+              Secure access restricted to authorized
+              personnel only.
+            </Text>
+            <Text style={styles.version}>
+              v2.4.0 - Build 8922
+            </Text>
           </View>
         </ScrollView>
-
-        {/* Footer */}
-        <View style={styles.footer}>
-          <Text style={styles.footerIcon}>🔐</Text>
-          <Text style={styles.footerText}>
-            Access restricted to authorized personnel only.
-            {'\n'}
-            Unauthorized access is prohibited and monitored.
-          </Text>
-          <Text style={styles.version}>
-            v2.4.0 • Build 8922
-          </Text>
-        </View>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#f6f7f8',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#f8f9fa',
   },
-
-  container: {
+  scrollView: {
     flex: 1,
-    width: '100%',
-    maxWidth: 420,
-    backgroundColor: '#f6f7f8',
   },
-
-  main: {
+  scroll: {
     flexGrow: 1,
-    paddingHorizontal: 32,
     justifyContent: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 40,
   },
-
   branding: {
     alignItems: 'center',
-    marginBottom: 48,
+    marginBottom: 40,
   },
   logo: {
     width: 80,
     height: 80,
-    borderRadius: 16,
-    backgroundColor: '#136dec',
+    borderRadius: 40,
+    backgroundColor: '#007bff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  logoIcon: {
+    fontSize: 16,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  appName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#212529',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  tagline: {
+    fontSize: 14,
+    color: '#6c757d',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  form: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  field: {
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#495057',
+    marginBottom: 8,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#dee2e6',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    fontSize: 16,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  error: {
+    color: '#dc3545',
+    fontSize: 14,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  button: {
+    backgroundColor: '#007bff',
+    borderRadius: 8,
+    paddingVertical: 14,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
     shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
-  logoIcon: {
-    fontSize: 36,
+  buttonDisabled: {
+    backgroundColor: '#6c757d',
+    opacity: 0.6,
+  },
+  buttonText: {
     color: '#fff',
-  },
-  appName: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#0f172a',
-  },
-  tagline: {
-    fontSize: 14,
-    color: '#64748b',
-    marginTop: 6,
-    textAlign: 'center',
-  },
-
-  form: {
-    gap: 20,
-  },
-
-  field: {
-    gap: 6,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#334155',
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    height: 48,
-  },
-  inputIcon: {
     fontSize: 16,
-    color: '#94a3b8',
-    marginRight: 8,
-  },
-  input: {
-    flex: 1,
-    fontSize: 14,
-    color: '#0f172a',
-  },
-
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  rememberRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  checkbox: {
-    width: 16,
-    height: 16,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#cbd5e1',
-    backgroundColor: '#fff',
-  },
-  rememberText: {
-    fontSize: 13,
-    color: '#475569',
-  },
-  link: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#136dec',
-  },
-
-  primaryButton: {
-    height: 48,
-    borderRadius: 8,
-    backgroundColor: '#136dec',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 12,
-  },
-  primaryButtonText: {
-    color: '#ffffff',
-    fontSize: 14,
     fontWeight: '600',
   },
-
-  support: {
-    marginTop: 32,
-    alignItems: 'center',
-    gap: 12,
+  forgot: {
+    color: '#6c757d',
+    fontSize: 14,
+    textAlign: 'center',
+    textDecorationLine: 'underline',
   },
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+  demoHint: {
+    marginTop: 16,
+    padding: 12,
+    backgroundColor: '#e7f3ff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#b8daff',
   },
-  divider: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#e2e8f0',
+  demoHintTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#004085',
+    marginBottom: 4,
+    textAlign: 'center',
   },
-  dividerText: {
-    fontSize: 13,
-    color: '#64748b',
-  },
-  supportLinks: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  supportLink: {
-    fontSize: 13,
-    color: '#64748b',
-  },
-  dot: {
+  demoHintText: {
     fontSize: 12,
-    color: '#94a3b8',
+    color: '#004085',
+    textAlign: 'center',
+    lineHeight: 18,
   },
-
   footer: {
-    padding: 24,
-    borderTopWidth: 1,
-    borderColor: '#e2e8f0',
+    marginTop: 24,
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
-  },
-  footerIcon: {
-    fontSize: 18,
-    color: '#94a3b8',
-    marginBottom: 8,
   },
   footerText: {
-    fontSize: 11,
-    color: '#64748b',
+    fontSize: 12,
+    color: '#6c757d',
     textAlign: 'center',
-    lineHeight: 16,
-    maxWidth: 260,
+    marginBottom: 4,
   },
   version: {
-    marginTop: 10,
     fontSize: 10,
-    color: '#94a3b8',
+    color: '#adb5bd',
+    textAlign: 'center',
   },
 });
