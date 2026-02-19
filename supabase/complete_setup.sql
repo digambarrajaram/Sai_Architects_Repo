@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS audit_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES profiles(id),
   action TEXT NOT NULL,
-  entity TEXT NOT NULL,
+  entity_type TEXT NOT NULL,
   entity_id UUID,
   metadata JSONB,
   created_at TIMESTAMPTZ DEFAULT NOW()
@@ -212,7 +212,7 @@ BEGIN
   INSERT INTO audit_logs (
     user_id,
     action,
-    entity,
+    entity_type,
     entity_id,
     metadata
   )
@@ -288,7 +288,7 @@ CREATE INDEX IF NOT EXISTS idx_expenses_project_id ON expenses(project_id);
 CREATE INDEX IF NOT EXISTS idx_expenses_category ON expenses(category);
 CREATE INDEX IF NOT EXISTS idx_expenses_created_by ON expenses(created_by);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id);
-CREATE INDEX IF NOT EXISTS idx_audit_logs_entity ON audit_logs(entity);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_entity_type ON audit_logs(entity_type);
 
 -- =====================================================
 -- 7. VERIFICATION QUERIES

@@ -8,12 +8,17 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
+  Platform,
+  Modal,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
 import { useAuth } from '../context/AuthContext';
 import { projectService, ProjectServiceError } from '../services/projectService';
+import { auditLogService } from '../services/auditLogService';
+import { AuditAction, AuditEntityType } from '../types';
+import { styles } from './styles/add-project.styles';
 
 type ProjectStatus = 'active' | 'planning' | 'completed' | 'on_hold';
 
@@ -36,6 +41,12 @@ export default function AddProjectScreen() {
   const [status, setStatus] =
     useState<ProjectStatus>('planning');
   const [loading, setLoading] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [tempDate, setTempDate] = useState({
+    year: new Date().getFullYear(),
+    month: new Date().getMonth() + 1,
+    day: new Date().getDate(),
+  });
 
   const handleSubmit = async () => {
     if (!name.trim()) {
@@ -61,6 +72,21 @@ export default function AddProjectScreen() {
 
       const createdProject =
         await projectService.createProject(projectData);
+
+      // Log audit trail
+      await auditLogService.logAction({
+        projectId: createdProject.id,
+        userId: user?.id || 'unknown',
+        userName: user?.name || 'Unknown User',
+        action: AuditAction.CREATE,
+        entityType: AuditEntityType.PROJECT,
+        entityId: createdProject.id,
+        details: JSON.stringify({
+          project_name: createdProject.name,
+          project_budget: createdProject.budget,
+          project_status: createdProject.status,
+        }),
+      });
 
       navigation.goBack();
 
@@ -149,12 +175,23 @@ export default function AddProjectScreen() {
           {/* Due Date */}
           <View style={styles.field}>
             <Text style={styles.label}>Due Date</Text>
-            <View style={styles.dateBox}>
+            <Pressable 
+              style={styles.dateBox}
+              onPress={() => {
+                const currentDate = new Date(dueDate);
+                setTempDate({
+                  year: currentDate.getFullYear(),
+                  month: currentDate.getMonth() + 1,
+                  day: currentDate.getDate(),
+                });
+                setShowDatePicker(true);
+              }}
+            >
               <Text style={styles.dateText}>
                 {formatDate(dueDate)}
               </Text>
               <Text style={styles.calendarIcon}>📅</Text>
-            </View>
+            </Pressable>
           </View>
 
           {/* Status */}
@@ -209,165 +246,208 @@ export default function AddProjectScreen() {
           )}
         </Pressable>
       </View>
+
+      {/* Date Picker Modal */}
+      <Modal
+        visible={showDatePicker}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowDatePicker(false)}
+      >
+        <Pressable 
+          style={datePickerStyles.modalOverlay}
+          onPress={() => setShowDatePicker(false)}
+        >
+          <Pressable 
+            style={datePickerStyles.modalContent}
+            onPress={(e) => e.stopPropagation()}
+          >
+            <View style={datePickerStyles.modalHeader}>
+              <Text style={datePickerStyles.modalTitle}>Select Due Date</Text>
+              <Pressable onPress={() => setShowDatePicker(false)}>
+                <Text style={datePickerStyles.closeBtn}>✕</Text>
+              </Pressable>
+            </View>
+            
+            <View style={datePickerStyles.dateRow}>
+              {/* Month */}
+              <View style={datePickerStyles.pickerColumn}>
+                <Text style={datePickerStyles.pickerLabel}>Month</Text>
+                <View style={datePickerStyles.pickerButtons}>
+                  <Pressable 
+                    style={datePickerStyles.pickerBtn}
+                    onPress={() => setTempDate(prev => ({
+                      ...prev,
+                      month: prev.month > 1 ? prev.month - 1 : 12
+                    }))}
+                  >
+                    <Text style={datePickerStyles.pickerBtnText}>−</Text>
+                  </Pressable>
+                  <Text style={datePickerStyles.pickerValue}>
+                    {new Date(tempDate.year, tempDate.month - 1).toLocaleDateString('en-US', { month: 'long' })}
+                  </Text>
+                  <Pressable 
+                    style={datePickerStyles.pickerBtn}
+                    onPress={() => setTempDate(prev => ({
+                      ...prev,
+                      month: prev.month < 12 ? prev.month + 1 : 1
+                    }))}
+                  >
+                    <Text style={datePickerStyles.pickerBtnText}>+</Text>
+                  </Pressable>
+                </View>
+              </View>
+
+              {/* Day */}
+              <View style={datePickerStyles.pickerColumn}>
+                <Text style={datePickerStyles.pickerLabel}>Day</Text>
+                <View style={datePickerStyles.pickerButtons}>
+                  <Pressable 
+                    style={datePickerStyles.pickerBtn}
+                    onPress={() => setTempDate(prev => ({
+                      ...prev,
+                      day: prev.day > 1 ? prev.day - 1 : 31
+                    }))}
+                  >
+                    <Text style={datePickerStyles.pickerBtnText}>−</Text>
+                  </Pressable>
+                  <Text style={datePickerStyles.pickerValue}>{tempDate.day}</Text>
+                  <Pressable 
+                    style={datePickerStyles.pickerBtn}
+                    onPress={() => setTempDate(prev => ({
+                      ...prev,
+                      day: prev.day < 31 ? prev.day + 1 : 1
+                    }))}
+                  >
+                    <Text style={datePickerStyles.pickerBtnText}>+</Text>
+                  </Pressable>
+                </View>
+              </View>
+
+              {/* Year */}
+              <View style={datePickerStyles.pickerColumn}>
+                <Text style={datePickerStyles.pickerLabel}>Year</Text>
+                <View style={datePickerStyles.pickerButtons}>
+                  <Pressable 
+                    style={datePickerStyles.pickerBtn}
+                    onPress={() => setTempDate(prev => ({
+                      ...prev,
+                      year: prev.year - 1
+                    }))}
+                  >
+                    <Text style={datePickerStyles.pickerBtnText}>−</Text>
+                  </Pressable>
+                  <Text style={datePickerStyles.pickerValue}>{tempDate.year}</Text>
+                  <Pressable 
+                    style={datePickerStyles.pickerBtn}
+                    onPress={() => setTempDate(prev => ({
+                      ...prev,
+                      year: prev.year + 1
+                    }))}
+                  >
+                    <Text style={datePickerStyles.pickerBtnText}>+</Text>
+                  </Pressable>
+                </View>
+              </View>
+            </View>
+
+            <Pressable 
+              style={datePickerStyles.confirmBtn}
+              onPress={() => {
+                const dateStr = `${tempDate.year}-${String(tempDate.month).padStart(2, '0')}-${String(tempDate.day).padStart(2, '0')}`;
+                setDueDate(dateStr);
+                setShowDatePicker(false);
+              }}
+            >
+              <Text style={datePickerStyles.confirmBtnText}>Confirm</Text>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
+// Date Picker Styles
+const datePickerStyles = StyleSheet.create({
+  modalOverlay: {
     flex: 1,
-    backgroundColor: '#f6f7f8',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
   },
-
-  scrollView: {
-    flex: 1,
-  },
-
-  header: {
-    height: 56,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    borderBottomWidth: 1,
-    borderColor: '#e5e7eb',
+  modalContent: {
     backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    paddingBottom: 40,
   },
-  cancelBtn: {
-    padding: 8,
-  },
-  cancelText: {
-    color: '#136dec',
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  headerTitle: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: 18,
-    fontWeight: '700',
-  },
-
-  content: {
-    padding: 16,
-    paddingBottom: 100,
-  },
-
-  field: {
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 20,
   },
-  label: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#334155',
-    marginBottom: 8,
-  },
-  required: {
-    color: '#dc2626',
-  },
-
-  input: {
-    height: 56,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    fontSize: 16,
-    color: '#0f172a',
-  },
-
-  amountBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    paddingHorizontal: 16,
-    height: 56,
-  },
-  currency: {
-    fontSize: 18,
-    color: '#94a3b8',
-    marginRight: 8,
-  },
-  amountInput: {
-    flex: 1,
+  modalTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#136dec',
+    color: '#1e293b',
   },
-
-  dateBox: {
-    height: 56,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  dateText: {
-    fontSize: 16,
-    color: '#0f172a',
-    fontWeight: '500',
-  },
-  calendarIcon: {
-    fontSize: 18,
-  },
-
-  statusOptions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  statusChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 12,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-  },
-  statusChipActive: {
-    backgroundColor: '#136dec',
-    borderColor: '#136dec',
-  },
-  statusChipText: {
-    fontSize: 14,
+  closeBtn: {
+    fontSize: 24,
     color: '#64748b',
-    fontWeight: '500',
+    paddingHorizontal: 8,
   },
-  statusChipTextActive: {
-    color: '#fff',
-    fontWeight: '600',
+  dateRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 24,
   },
-
-  footer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 16,
-    borderTopWidth: 1,
-    borderColor: '#e5e7eb',
-    backgroundColor: '#fff',
+  pickerColumn: {
+    alignItems: 'center',
   },
-  submitBtn: {
-    backgroundColor: '#136dec',
-    borderRadius: 12,
-    paddingVertical: 16,
+  pickerLabel: {
+    fontSize: 12,
+    color: '#64748b',
+    marginBottom: 8,
+    textTransform: 'uppercase',
+  },
+  pickerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  pickerBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#f1f5f9',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  submitBtnDisabled: {
-    backgroundColor: '#94a3b8',
+  pickerBtnText: {
+    fontSize: 20,
+    color: '#334155',
+    fontWeight: '500',
   },
-  submitText: {
+  pickerValue: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1e293b',
+    minWidth: 60,
+    textAlign: 'center',
+  },
+  confirmBtn: {
+    backgroundColor: '#007bff',
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  confirmBtnText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '600',
   },
 });
+
+

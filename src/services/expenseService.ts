@@ -45,6 +45,16 @@ export interface DateRangeFilter {
   endDate?: Date;    // Inclusive end date
 }
 
+export interface ExpenseFilters {
+  startDate?: Date;
+  endDate?: Date;
+  categories?: BackendExpenseCategory[];
+  minAmount?: number;
+  maxAmount?: number;
+  searchQuery?: string;
+  status?: string;
+}
+
 export interface ExpenseQueryOptions {
   projectId: string;
   dateRange?: DateRangeFilter;
@@ -160,12 +170,12 @@ const checkAuthSession = async (): Promise<boolean> => {
 
 export const expenseService = {
   /**
-   * Get all expenses for a project with optional date filtering
+   * Get all expenses for a project with optional filtering
    * Uses server-side filtering for optimal performance
    */
   async getExpensesByProject(
     projectId: string, 
-    dateRange?: DateRangeFilter
+    filters?: ExpenseFilters
   ): Promise<BackendExpense[]> {
     if (shouldUseMockData()) {
       if (__DEV__) {
@@ -174,14 +184,40 @@ export const expenseService = {
       let filtered = MOCK_EXPENSES.filter(e => e.project_id === projectId);
       
       // Apply date filtering on mock data
-      if (dateRange?.startDate || dateRange?.endDate) {
+      if (filters?.startDate || filters?.endDate) {
         filtered = filtered.filter(expense => {
           const expenseDate = new Date(expense.expense_date);
-          if (dateRange.startDate && expenseDate < dateRange.startDate) return false;
-          if (dateRange.endDate && expenseDate > dateRange.endDate) return false;
+          if (filters.startDate && expenseDate < filters.startDate) return false;
+          if (filters.endDate && expenseDate > filters.endDate) return false;
           return true;
         });
       }
+
+      // Apply category filtering
+      if (filters?.categories && filters.categories.length > 0) {
+        filtered = filtered.filter(expense => 
+          filters.categories!.includes(expense.category as BackendExpenseCategory)
+        );
+      }
+
+      // Apply amount range filtering
+      if (filters?.minAmount !== undefined) {
+        filtered = filtered.filter(expense => expense.amount >= filters.minAmount!);
+      }
+      if (filters?.maxAmount !== undefined) {
+        filtered = filtered.filter(expense => expense.amount <= filters.maxAmount!);
+      }
+
+      // Apply search query filtering (searches in description and category)
+      if (filters?.searchQuery) {
+        const query = filters.searchQuery.toLowerCase();
+        filtered = filtered.filter(expense => 
+          expense.category.toLowerCase().includes(query) ||
+          (expense.description && expense.description.toLowerCase().includes(query))
+        );
+      }
+
+      // Note: status filtering is handled client-side in the UI since status is not in the database
       
       return filtered.sort(
         (a, b) => new Date(b.expense_date).getTime() - new Date(a.expense_date).getTime()
@@ -195,7 +231,7 @@ export const expenseService = {
     }
 
     try {
-      // Build query with date filters - only select columns that exist in the database
+      // Build query with filters - only select columns that exist in the database
       let query = supabase
         .from('expenses')
         .select(`
@@ -203,6 +239,7 @@ export const expenseService = {
           project_id,
           amount,
           category,
+          description,
           expense_date,
           created_by,
           created_at
@@ -210,14 +247,32 @@ export const expenseService = {
         .eq('project_id', projectId);
 
       // Apply server-side date filtering (inclusive)
-      if (dateRange?.startDate) {
-        const startDateStr = dateRange.startDate.toISOString().split('T')[0];
+      if (filters?.startDate) {
+        const startDateStr = filters.startDate.toISOString().split('T')[0];
         query = query.gte('expense_date', startDateStr);
       }
       
-      if (dateRange?.endDate) {
-        const endDateStr = dateRange.endDate.toISOString().split('T')[0];
+      if (filters?.endDate) {
+        const endDateStr = filters.endDate.toISOString().split('T')[0];
         query = query.lte('expense_date', endDateStr);
+      }
+
+      // Apply category filtering (server-side)
+      if (filters?.categories && filters.categories.length > 0) {
+        query = query.in('category', filters.categories);
+      }
+
+      // Apply amount range filtering (server-side)
+      if (filters?.minAmount !== undefined) {
+        query = query.gte('amount', filters.minAmount);
+      }
+      if (filters?.maxAmount !== undefined) {
+        query = query.lte('amount', filters.maxAmount);
+      }
+
+      // Apply search query filtering (server-side) - searches in description and category
+      if (filters?.searchQuery) {
+        query = query.or(`category.ilike.%${filters.searchQuery}%,description.ilike.%${filters.searchQuery}%`);
       }
 
       const { data, error } = await query.order('expense_date', { ascending: false });
@@ -233,7 +288,7 @@ export const expenseService = {
 
       if (__DEV__) {
         console.log('[ExpenseService] Fetched expenses:', data?.length || 0, 
-          dateRange ? `with date filter: ${dateRange.startDate?.toISOString() || 'null'} - ${dateRange.endDate?.toISOString() || 'null'}` : '');
+          filters ? 'with filters' : '');
       }
 
       return data || [];
@@ -256,7 +311,13 @@ export const expenseService = {
   async getExpensesWithFilters(options: ExpenseQueryOptions): Promise<BackendExpense[]> {
     const { projectId, dateRange, orderBy = 'expense_date', ascending = false } = options;
     
-    return this.getExpensesByProject(projectId, dateRange);
+    // Convert DateRangeFilter to ExpenseFilters
+    const filters: ExpenseFilters = dateRange ? {
+      startDate: dateRange.startDate,
+      endDate: dateRange.endDate,
+    } : {};
+    
+    return this.getExpensesByProject(projectId, filters);
   },
 
   /**
@@ -279,6 +340,7 @@ export const expenseService = {
           project_id,
           amount,
           category,
+          description,
           expense_date,
           created_by,
           created_at
@@ -436,6 +498,7 @@ export const expenseService = {
           project_id: input.project_id,
           amount: input.amount,
           category: input.category,
+          description: input.description,
           expense_date: input.expense_date,
           created_by: userId,
         })
@@ -495,12 +558,9 @@ export const expenseService = {
     }
 
     try {
-      // Remove description from updates since it doesn't exist in the database
-      const { description, ...updateData } = updates;
-      
       const { data, error } = await supabase
         .from('expenses')
-        .update(updateData)
+        .update(updates)
         .eq('id', expenseId)
         .select()
         .single();

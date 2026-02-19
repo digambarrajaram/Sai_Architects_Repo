@@ -44,4 +44,9 @@ export const colors = {
   positive: '#22C55E',
   negative: '#EF4444',
   neutral: '#64748b',
+  
+  // Additional colors for components
+  surface: '#ffffff',
+  white: '#ffffff',
+  black: '#000000',
 };

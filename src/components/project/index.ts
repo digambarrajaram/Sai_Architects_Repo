@@ -12,7 +12,4 @@ export {
 
 export {
   ExpenseItem,
-  CompactExpenseItem,
-  CategoryBadge,
-  ExpenseSummaryRow,
 } from './ExpenseItem';

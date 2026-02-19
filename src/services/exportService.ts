@@ -85,13 +85,13 @@ async function generateReportData(filter: ReportFilter): Promise<ReportData> {
   // Map expenses to Expense type
   const mappedExpenses: Expense[] = expenses.map((e: any) => ({
     id: e.id,
-    projectId: e.project_id,
+    project_id: e.project_id,
     amount: e.amount,
-    description: e.category,
-    category: e.category as any,
-    date: e.expense_date,
-    createdBy: e.created_by,
-    createdAt: e.created_at,
+    category: e.category,
+    expense_date: e.expense_date,
+    created_by: e.created_by,
+    created_at: e.created_at,
+    description: e.description,
   }));
 
   // Calculate category breakdown
@@ -119,7 +119,7 @@ async function generateReportData(filter: ReportFilter): Promise<ReportData> {
 function calculateCategoryBreakdown(expenses: Expense[]): CategoryBreakdown[] {
   const totalAmount = expenses.reduce((sum, e) => sum + e.amount, 0);
   
-  const categoryMap = new Map<ExpenseCategory, { total: number; count: number }>();
+  const categoryMap = new Map<string, { total: number; count: number }>();
   
   expenses.forEach(expense => {
     const existing = categoryMap.get(expense.category) || { total: 0, count: 0 };
@@ -174,7 +174,7 @@ function generateCSVContent(reportData: ReportData): string {
   lines.push('EXPENSE DETAILS');
   lines.push('Date,Description,Category,Amount');
   reportData.expenses.forEach(expense => {
-    lines.push(`${expense.date},"${expense.description}",${expense.category},${expense.amount}`);
+    lines.push(`${expense.expense_date},"${expense.description || ''}",${expense.category},${expense.amount}`);
   });
 
   return lines.join('\n');
@@ -205,7 +205,7 @@ function generatePDFData(reportData: ReportData): object {
     },
     categoryBreakdown: reportData.categoryBreakdown,
     expenses: reportData.expenses.map(e => ({
-      date: e.date,
+      date: e.expense_date,
       description: e.description,
       category: e.category,
       amount: e.amount,
@@ -252,8 +252,8 @@ function generateExcelData(reportData: ReportData): object {
         data: [
           ['Date', 'Description', 'Category', 'Amount', 'Notes'],
           ...reportData.expenses.map(e => [
-            e.date,
-            e.description,
+            e.expense_date,
+            e.description || '',
             e.category,
             e.amount,
             e.notes || '',

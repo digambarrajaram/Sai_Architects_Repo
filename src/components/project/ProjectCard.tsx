@@ -14,12 +14,15 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
-import { Project, ProjectStatus, ProjectTotals } from '../../types';
+import { Project, ProjectTotals } from '../../types';
 import { colors } from '../../theme/colors';
+import { shadowPresets } from '../../theme/shadows';
 
 // =====================================================
 // TYPES
 // =====================================================
+
+type ProjectStatusType = 'active' | 'planning' | 'completed' | 'on_hold';
 
 interface ProjectCardProps {
   project: Project;
@@ -35,24 +38,22 @@ interface ProjectCardProps {
 // STATUS BADGE
 // =====================================================
 
-const STATUS_COLORS: Record<ProjectStatus, { bg: string; text: string }> = {
-  [ProjectStatus.PLANNING]: { bg: '#E3F2FD', text: '#1976D2' },
-  [ProjectStatus.IN_PROGRESS]: { bg: '#E8F5E9', text: '#388E3C' },
-  [ProjectStatus.ON_HOLD]: { bg: '#FFF3E0', text: '#F57C00' },
-  [ProjectStatus.COMPLETED]: { bg: '#E0F2F1', text: '#00796B' },
-  [ProjectStatus.CANCELLED]: { bg: '#FFEBEE', text: '#D32F2F' },
+const STATUS_COLORS: Record<ProjectStatusType, { bg: string; text: string }> = {
+  planning: { bg: '#E3F2FD', text: '#1976D2' },
+  active: { bg: '#E8F5E9', text: '#388E3C' },
+  on_hold: { bg: '#FFF3E0', text: '#F57C00' },
+  completed: { bg: '#E0F2F1', text: '#00796B' },
 };
 
-const STATUS_LABELS: Record<ProjectStatus, string> = {
-  [ProjectStatus.PLANNING]: 'Planning',
-  [ProjectStatus.IN_PROGRESS]: 'In Progress',
-  [ProjectStatus.ON_HOLD]: 'On Hold',
-  [ProjectStatus.COMPLETED]: 'Completed',
-  [ProjectStatus.CANCELLED]: 'Cancelled',
+const STATUS_LABELS: Record<ProjectStatusType, string> = {
+  planning: 'Planning',
+  active: 'In Progress',
+  on_hold: 'On Hold',
+  completed: 'Completed',
 };
 
 interface StatusBadgeProps {
-  status: ProjectStatus;
+  status: ProjectStatusType;
   testID?: string;
 }
 
@@ -131,19 +132,6 @@ export function ProjectCard({
         <StatusBadge status={project.status} testID={`${testID}-status`} />
       </View>
       
-      <Text style={styles.description} numberOfLines={2} testID={`${testID}-description`}>
-        {project.description}
-      </Text>
-      
-      {project.location && (
-        <View style={styles.locationRow}>
-          <Text style={styles.locationIcon}>📍</Text>
-          <Text style={styles.location} numberOfLines={1}>
-            {project.location}
-          </Text>
-        </View>
-      )}
-      
       {showBudget && totals && (
         <View style={styles.budgetRow} testID={`${testID}-budget`}>
           <View style={styles.budgetItem}>
@@ -175,11 +163,11 @@ export function ProjectCard({
       
       <View style={styles.footer}>
         <Text style={styles.date}>
-          Started: {formatDate(project.startDate)}
+          Created: {formatDate(project.created_at)}
         </Text>
-        {project.clientName && (
-          <Text style={styles.client} numberOfLines={1}>
-            {project.clientName}
+        {project.due_date && (
+          <Text style={styles.date}>
+            Due: {formatDate(project.due_date)}
           </Text>
         )}
       </View>
@@ -215,7 +203,7 @@ export function CompactProjectCard({
           {project.name}
         </Text>
         <Text style={styles.compactLocation} numberOfLines={1}>
-          {project.location || 'No location'}
+          Due: {formatDate(project.due_date)}
         </Text>
       </View>
       <StatusBadge status={project.status} />
@@ -259,11 +247,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    ...shadowPresets.card,
     minHeight: 120, // Fixed minimum height for testing
   } as ViewStyle,
   header: {
@@ -390,11 +374,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    ...shadowPresets.listItem,
     minHeight: 60, // Fixed minimum height for testing
   } as ViewStyle,
   compactContent: {

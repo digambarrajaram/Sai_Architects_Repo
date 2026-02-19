@@ -13,6 +13,17 @@ export enum UserRole {
   ADMIN = 'ADMIN',
 }
 
+export interface Profile {
+  id: string;
+  full_name: string;
+  email: string;
+  role: 'owner' | 'supervisor';
+  phone?: string;
+  avatar_url?: string;
+  created_at: string;
+  updated_at?: string;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -26,26 +37,29 @@ export interface User {
 // PROJECT TYPES
 // =====================================================
 
+export enum ProjectStatus {
+  PLANNING = 'planning',
+  IN_PROGRESS = 'active',
+  ON_HOLD = 'on_hold',
+  COMPLETED = 'completed',
+  CANCELLED = 'cancelled',
+}
+
 export interface Project {
   id: string;
   name: string;
-  description: string;
-  status: ProjectStatus;
-  startDate: string;
-  endDate?: string;
-  budget?: number;
-  location?: string;
-  clientName?: string;
-  createdAt: string;
-  updatedAt: string;
+  status: 'active' | 'planning' | 'completed' | 'on_hold';
+  due_date: string;
+  budget: number;
+  created_by: string;
+  created_at: string;
+  updated_at?: string;
 }
 
-export enum ProjectStatus {
-  PLANNING = 'PLANNING',
-  IN_PROGRESS = 'IN_PROGRESS',
-  ON_HOLD = 'ON_HOLD',
-  COMPLETED = 'COMPLETED',
-  CANCELLED = 'CANCELLED',
+export interface ProjectWithTotals extends Project {
+  total_expenses: number;
+  expense_count: number;
+  remaining_budget: number;
 }
 
 export interface ProjectTotals {
@@ -68,15 +82,20 @@ export interface ProjectMetadata {
 
 export interface Expense {
   id: string;
-  projectId: string;
+  project_id: string;
   amount: number;
-  description: string;
-  category: ExpenseCategory;
-  date: string;
-  createdBy: string;
-  createdAt: string;
-  attachments?: string[];
+  category: string;
+  expense_date: string;
+  created_by: string;
+  created_at: string;
+  description?: string;
   notes?: string;
+}
+
+export interface ExpenseWithUser extends Expense {
+  profile?: {
+    full_name: string;
+  };
 }
 
 export enum ExpenseCategory {
@@ -128,7 +147,7 @@ export interface ReportData {
 }
 
 export interface CategoryBreakdown {
-  category: ExpenseCategory;
+  category: string;
   total: number;
   percentage: number;
   count: number;

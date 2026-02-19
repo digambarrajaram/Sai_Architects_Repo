@@ -11,7 +11,7 @@ import { useAuth } from '../context/AuthContext';
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
   const role = user?.role;
 
   return (
@@ -142,7 +142,7 @@ export default function ProfileScreen() {
           {/* Logout */}
           <Pressable
             style={styles.logoutBtn}
-            onPress={logout}
+            onPress={signOut}
             testID="logout-button"
           >
             <Text style={styles.logoutIcon}>⎋</Text>

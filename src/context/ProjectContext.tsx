@@ -172,13 +172,12 @@ export function ProjectProvider({ children, initialProjectId }: ProjectProviderP
         setProject({
           id: projectData.id,
           name: projectData.name,
-          description: '',
-          status: projectData.status as any,
-          startDate: projectData.created_at,
-          endDate: projectData.due_date,
+          status: projectData.status as 'active' | 'planning' | 'completed' | 'on_hold',
+          due_date: projectData.due_date,
           budget: projectData.budget,
-          createdAt: projectData.created_at,
-          updatedAt: projectData.updated_at || projectData.created_at,
+          created_by: projectData.created_by,
+          created_at: projectData.created_at,
+          updated_at: projectData.updated_at,
         });
       }
       
@@ -216,13 +215,13 @@ export function ProjectProvider({ children, initialProjectId }: ProjectProviderP
       // Map BackendExpense to Expense type
       const mappedExpenses: Expense[] = expensesData.map(exp => ({
         id: exp.id,
-        projectId: exp.project_id,
+        project_id: exp.project_id,
         amount: exp.amount,
-        description: exp.category,
-        category: exp.category as any,
-        date: exp.expense_date,
-        createdBy: exp.created_by,
-        createdAt: exp.created_at,
+        category: exp.category,
+        expense_date: exp.expense_date,
+        created_by: exp.created_by,
+        created_at: exp.created_at,
+        description: exp.description,
       }));
       setExpenses(mappedExpenses);
       setExpensesLoadingState('success');
@@ -232,26 +231,27 @@ export function ProjectProvider({ children, initialProjectId }: ProjectProviderP
   }, [projectId]);
 
   const addExpense = useCallback(
-    async (expense: Omit<Expense, 'id' | 'createdAt' | 'createdBy'>) => {
+    async (expense: Omit<Expense, 'id' | 'created_at' | 'created_by'>) => {
       if (!projectId) throw new Error('No project selected');
 
       const newExpense = await expenseService.createExpense({
         project_id: projectId,
         amount: expense.amount,
         category: expense.category,
-        expense_date: expense.date,
+        expense_date: expense.expense_date,
+        description: expense.description,
       });
 
       // Map BackendExpense to Expense type
       const mappedExpense: Expense = {
         id: newExpense.id,
-        projectId: newExpense.project_id,
+        project_id: newExpense.project_id,
         amount: newExpense.amount,
-        description: newExpense.category,
-        category: newExpense.category as any,
-        date: newExpense.expense_date,
-        createdBy: newExpense.created_by,
-        createdAt: newExpense.created_at,
+        category: newExpense.category,
+        expense_date: newExpense.expense_date,
+        created_by: newExpense.created_by,
+        created_at: newExpense.created_at,
+        description: newExpense.description,
       };
 
       setExpenses(prev => [mappedExpense, ...prev]);
@@ -274,19 +274,20 @@ export function ProjectProvider({ children, initialProjectId }: ProjectProviderP
       const updatedExpense = await expenseService.updateExpense(expenseId, {
         amount: updates.amount,
         category: updates.category,
-        expense_date: updates.date,
+        expense_date: updates.expense_date,
+        description: updates.description,
       });
 
       // Map BackendExpense to Expense type
       const mappedExpense: Expense = {
         id: updatedExpense.id,
-        projectId: updatedExpense.project_id,
+        project_id: updatedExpense.project_id,
         amount: updatedExpense.amount,
-        description: updatedExpense.category,
-        category: updatedExpense.category as any,
-        date: updatedExpense.expense_date,
-        createdBy: updatedExpense.created_by,
-        createdAt: updatedExpense.created_at,
+        category: updatedExpense.category,
+        expense_date: updatedExpense.expense_date,
+        created_by: updatedExpense.created_by,
+        created_at: updatedExpense.created_at,
+        description: updatedExpense.description,
       };
 
       setExpenses(prev =>
