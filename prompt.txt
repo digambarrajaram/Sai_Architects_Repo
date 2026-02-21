@@ -1,0 +1,324 @@
+I have a React-based Project & Expense Management app (SAI ARCHITECT'S) running on 
+localhost:8081. Several UI fixes have already been applied since the last review 
+(budget warning highlight, ₹ currency symbol fix, "Back" label on nav, Description 
+field added to New Project, Expense Title field added, email shown on Profile, 
+Language corrected to English (IN) + INR (₹), Log Out button added). 
+
+Please fix the following NEW and REMAINING issues observed in the latest recording:
+
+═══════════════════════════════════════════════════════
+SCREEN 1: EXPENSE DETAIL PAGE ("patil — Expenses")
+═══════════════════════════════════════════════════════
+
+Issue 1 — Stat cards are still excessively tall with massive empty space
+The Pending (yellow), Approved (green), and Rejected (pink) stat cards remain 
+very tall vertical columns (~250–300px) with only an icon + label + number at 
+the very top and a huge empty colored area below. The Total, Count, and Average 
+cards beside them are compact and flat by contrast, creating severe visual 
+imbalance.
+
+Fix: Cap the height of ALL stat cards uniformly. Set:
+  .stat-card { max-height: 96px; min-height: 72px; }
+The Pending/Approved/Rejected cards should NOT stretch to fill vertical space. 
+Use align-items: flex-start on their container, not stretch.
+
+Issue 2 — Large blank gap between stat cards row and the expense list
+Between the stat cards section and the "Showing X expenses" / expense list below, 
+there is an enormous empty white area (~200px of blank space). This makes the page 
+feel broken — as if content failed to load.
+
+Fix: Remove any fixed min-height or padding on the container between the stat 
+cards and the list. The expense list should sit directly below the stat cards 
+with normal spacing (16–24px gap max). Check for any wrapper div with a hardcoded 
+height or padding-bottom causing this gap.
+
+Issue 3 — "Active Filters" section appears AND disappears inconsistently
+When a filter is applied (e.g., "This Month"), the "Active Filters:" chip appears 
+below the stat cards. But when the filter panel is opened and a different date 
+range ("All Time") is selected, the Active Filters section disappears entirely 
+even though a filter is still active. Then when "Custom Date Range" is used with 
+a Status filter, two chips appear ("Custom Date Range ×" and "Status: Pending ×").
+
+The behavior is inconsistent — the "Active Filters" row should always be visible 
+when ANY non-default filter is active, and hidden only when all filters are reset 
+to defaults.
+
+Fix: Show the "Active Filters:" section whenever at least one of these is true:
+  - dateRange !== 'thisMonth' (or whatever the default is)
+  - selectedCategories.length > 0
+  - minAmount !== '' || maxAmount !== ''
+  - statusFilter !== 'all'
+  - searchQuery !== ''
+
+Issue 4 — Filter panel has no visible header/title or close affordance
+When the filter options panel opens (Date Range, Categories, Amount Range, Status, 
+Sort By), it appears inline on the page with no clear heading or way to collapse 
+it. There's also no "Apply Filters" button visible until the user scrolls down.
+
+Fix: Add a collapsible filter panel with a clear "Filters" heading and 
+collapse/expand toggle (chevron icon). The "Apply Filters" button should be 
+sticky at the bottom of the panel:
+  position: sticky; bottom: 0; background: white; padding: 12px;
+
+Issue 5 — "Custom Date Range" modal has greyed-out "Apply Date Range" button 
+even before selecting dates
+The "Select Date Range" bottom sheet modal shows Start Date and End Date fields, 
+but the "Apply Date Range" button is already greyed out (disabled) before the 
+user has even tried to submit with empty fields. The visual state doesn't 
+communicate WHY it's disabled.
+
+Fix: Keep the button muted/disabled until BOTH Start Date and End Date are 
+filled in. But also show a small helper text when the button is disabled:
+  <p className="text-xs text-gray-400 text-center mt-1">
+    Select both start and end dates to continue
+  </p>
+
+Issue 6 — Expense list items show description text directly on the card without 
+truncation
+The "Labor" expense item shows its full description "This the expense. This also 
+not is db schema • 20 Feb 2026" inline on the card. Long descriptions overflow 
+the card layout and push other content.
+
+Fix: Truncate description text to a single line with ellipsis:
+  .expense-description {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 60%;
+  }
+
+Issue 7 — "Expense Title" field value is NOT displayed on the expense list card
+The Add Expense form now has an "Expense Title (Optional)" field, but after saving, 
+the expense list card shows only the Category name ("Labor", "Materials") as the 
+title — NOT the custom Expense Title entered by the user.
+
+Fix: On the expense card, show the Expense Title if it was provided, falling 
+back to the Category name only if Expense Title is empty:
+  const displayName = expense.title || expense.category;
+  
+Also, note: the user typed "title. this is not in DB schema" as the expense 
+title — confirming that the "Expense Title" field value is not being saved to 
+the database. Ensure the `title` field is included in the INSERT/UPDATE payload 
+sent to your Supabase `expenses` table. Add a `title` column to the expenses 
+table if it doesn't exist:
+  ALTER TABLE expenses ADD COLUMN title TEXT;
+
+═══════════════════════════════════════════════════════
+SCREEN 2: ADD EXPENSE FORM
+═══════════════════════════════════════════════════════
+
+Issue 8 — Amount field input is misaligned: ₹ symbol and number are not 
+vertically centered
+The Amount field shows "₹ 3000" where the ₹ symbol appears slightly left-padded 
+and detached from the number. There is a gap between the ₹ and the input value 
+that looks unintentional.
+
+Fix: Use a proper input prefix pattern:
+  <div className="flex items-center border rounded-lg px-3 py-2">
+    <span className="text-gray-500 mr-1">₹</span>
+    <input type="number" className="flex-1 outline-none" />
+  </div>
+
+Issue 9 — "Save Expense" button is disabled (greyed) when Category is not 
+selected, but gives no feedback
+When the form is open with Amount filled but Category still showing 
+"Select category", the Save button is greyed out. There is no inline validation 
+message telling the user which field is missing.
+
+Fix: On attempted submit (or on blur of required fields), show inline validation:
+  - Below Category: "Please select a category" (red text, only if untouched + 
+    submit attempted)
+  - Required fields should show a red border when invalid after interaction.
+
+Issue 10 — Category selector opens as a bottom sheet but has no search/filter 
+for long lists
+The "Select Category" modal shows a flat scrollable list (Materials, Labor, 
+Machinery, etc.) with no search box. If there are many categories, this becomes 
+unusable.
+
+Fix: Add a search input at the top of the category selector bottom sheet:
+  <input 
+    placeholder="Search categories..." 
+    className="w-full border-b py-2 px-3 mb-2"
+    onChange={(e) => setSearch(e.target.value)}
+  />
+  Filter the list to show only categories matching the search term.
+
+═══════════════════════════════════════════════════════
+SCREEN 3: NEW PROJECT FORM
+═══════════════════════════════════════════════════════
+
+Issue 11 — Budget field typed value appears in blue text instead of black
+When the user types a budget value (e.g., "50000"), the text renders in bright 
+blue color inside the input. All other form fields show black input text. This 
+blue color is inconsistent and may be caused by an unintended CSS rule or 
+className targeting the budget input specifically.
+
+Fix: Ensure the budget input uses the same text color as other inputs:
+  input[type="number"] { color: #111827; }  /* or Tailwind: text-gray-900 */
+Remove any accidental text-blue-* class on the budget input field.
+
+Issue 12 — "Create Project" button is invisible/barely visible when form is 
+partially filled
+When only "Project Name" is filled but Budget is still 0.00, the "Create Project" 
+button at the bottom is rendered in near-white or very light grey — it's 
+practically invisible against the white page background.
+
+Fix: The disabled state of the button must always have a clearly visible 
+background and text:
+  /* Disabled */
+  background-color: #E5E7EB;  /* gray-200 */
+  color: #6B7280;              /* gray-500 */
+  cursor: not-allowed;
+  /* Never set opacity < 0.4 or use white/near-white backgrounds for 
+     disabled buttons */
+
+Issue 13 — New Project form: "New Project" pre-filled as the default 
+Project Name
+The Project Name field is pre-filled with "New Project" as the default value. 
+This is a poor UX pattern — it means users who don't clear the field will 
+accidentally create a project literally named "New Project". Confirmed by the 
+fact the project list now has multiple entries called "New Project".
+
+Fix: The Project Name field should be empty by default with only a placeholder:
+  <input placeholder="Enter project name" defaultValue="" />
+Do NOT pre-populate with "New Project" or any other default text.
+
+Issue 14 — Multiple projects named "New Project" exist in the list
+Because the form pre-fills "New Project" as the default name (Issue 13 above), 
+there are now 2–3 projects in the list all named "New Project". This creates 
+confusion and makes the list unmanageable.
+
+Fix: In addition to fixing the form default (Issue 13), add a duplicate name 
+check on form submission:
+  if (existingProjects.some(p => p.name.toLowerCase() === name.toLowerCase())) {
+    setError('A project with this name already exists.');
+    return;
+  }
+
+Issue 15 — Status toggle buttons have inconsistent visual styles
+In the New Project form, the status options are "In Progress | Planning | 
+Completed | On Hold". The selected button ("In Progress") has a green outline 
+style, while "Planning" (previously selected by default) had a blue filled style. 
+The active selection color (green vs. blue) is inconsistent with itself and with 
+the colored status badges shown on project cards.
+
+Fix: Standardize the selected status button style to match how statuses appear 
+as badges in the project list:
+  - "In Progress" selected → blue background (#3B82F6), white text
+  - "Planning" selected → blue background (#3B82F6), white text
+  - "Completed" selected → green background (#10B981), white text
+  - "On Hold" selected → amber/orange background (#F59E0B), white text
+  Unselected: light gray background, dark text, border: 1px solid #E5E7EB
+
+═══════════════════════════════════════════════════════
+SCREEN 4: PROJECTS LIST PAGE
+═══════════════════════════════════════════════════════
+
+Issue 16 — "patil" project over-budget card highlight is good, but the 
+warning icon (⚠️) overlaps the "Remaining" label text
+The over-budget project "patil" now shows a red card highlight and a "⚠ -₹1.1K" 
+warning — good progress! However, the warning triangle icon (⚠️) appears to be 
+positioned in a way that partially overlaps or sits too close to the "Remaining" 
+text label, making it look cramped.
+
+Fix: Give the warning icon proper spacing:
+  <span className="flex items-center gap-1 text-red-600 font-bold">
+    <WarningIcon size={14} />
+    <span>-₹1.1K</span>
+  </span>
+Use a gap of at least 4px between the icon and the value text.
+
+Issue 17 — Project cards still have no border/card container — items look like 
+a raw unstyled list
+Although the over-budget card has a red background highlight (good), regular 
+project cards still have no border, shadow, or rounded container. The projects 
+list looks like an unstyled flat document.
+
+Fix: Apply a consistent card style to ALL project items:
+  className="border border-gray-200 rounded-xl p-4 mb-3 shadow-sm 
+             hover:shadow-md transition-shadow cursor-pointer bg-white"
+For over-budget cards, override to:
+  className="border border-red-200 rounded-xl p-4 mb-3 shadow-sm bg-red-50"
+
+Issue 18 — Search works correctly now (filter tabs preserved, no layout 
+explosion) — but search results include projects whose names DON'T match 
+the search term
+When searching "new", results include: "New Project" ✓, "My new project" ✓, 
+and another "New Project" ✓ — this is correct. However, on a different search, 
+all projects appear regardless of the query. Verify that the search filter 
+is doing a case-insensitive substring match on the project name:
+  projects.filter(p => 
+    p.name.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+═══════════════════════════════════════════════════════
+SCREEN 5: MY PROFILE PAGE
+═══════════════════════════════════════════════════════
+
+Issue 19 — "Log Out" button is styled with a pink/red background that looks 
+like a destructive danger action but has no confirmation dialog
+The "Log Out" button appears at the bottom with a pink/light-red background 
+and a power icon. Clicking it immediately logs the user out with no 
+confirmation prompt. This is risky — especially since the button color makes 
+it look like a destructive action.
+
+Fix: Either add a confirmation dialog before logging out:
+  if (window.confirm("Are you sure you want to log out?")) { handleLogout(); }
+Or use a bottom sheet confirmation:
+  "Log Out?" → [Cancel] [Log Out]
+
+Issue 20 — Profile avatar has no edit/upload affordance (camera icon missing)
+The "JC" initials avatar shows a blue verification checkmark but still has no 
+camera/edit icon overlay to indicate the photo can be changed. The pencil (✏️) 
+edit button in the top-right only edits profile text fields, not the avatar.
+
+Fix: Add a small camera icon button overlaid on the bottom-right of the avatar:
+  <div className="relative inline-block">
+    <Avatar initials="JC" size={80} />
+    <button 
+      className="absolute bottom-0 right-0 bg-blue-500 rounded-full p-1.5 
+                 border-2 border-white shadow"
+      onClick={handleAvatarUpload}
+    >
+      <CameraIcon size={12} color="white" />
+    </button>
+  </div>
+
+Issue 21 — "Terms & Policy" menu item icon is a blank/faded grey square
+The Terms & Policy row shows a faded placeholder icon (blank grey square) instead 
+of a proper icon like a document or shield. This looks like the icon failed to 
+load or wasn't assigned.
+
+Fix: Assign a proper icon to the Terms & Policy row:
+  import { FileTextIcon } from 'lucide-react';
+  // or use an emoji: 📄
+  <FileTextIcon size={20} className="text-gray-500" />
+
+═══════════════════════════════════════════════════════
+GLOBAL / CROSS-SCREEN
+═══════════════════════════════════════════════════════
+
+Issue 22 — "Back" navigation text overlaps with the back arrow icon
+On several screens (expense detail, add expense, profile), the back navigation 
+shows "← Back" but the arrow and "Back" text are rendered as two separate 
+elements that are not properly aligned — on some screens the arrow sits above 
+"Back" (stacked vertically) rather than inline.
+
+Fix: Ensure the back button is a single flex row:
+  <button className="flex items-center gap-1 text-blue-600">
+    <ArrowLeftIcon size={16} />
+    <span>Back</span>
+  </button>
+
+Issue 23 — Notification badge on the bell icon shows stale/incorrect counts 
+The notification bell still shows inconsistent red badge counts (1, 3, 9) 
+across different screens without any real new notifications triggering the 
+change. This appears to be driven by the ongoing re-fetch loop incrementing 
+a counter incorrectly.
+
+Fix: Decouple the notification badge count from API call counts entirely. 
+The badge should only update when a genuine notification event is received 
+(e.g., expense status changed, project budget exceeded). Use a dedicated 
+notifications state that is only modified by explicit notification events, 
+not by data fetch completions.

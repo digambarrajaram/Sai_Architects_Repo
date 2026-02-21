@@ -52,6 +52,11 @@ export const styles = StyleSheet.create({
   required: {
     color: colors.error,
   },
+  optional: {
+    color: colors.textSecondary,
+    fontWeight: '400',
+    fontSize: typography.sizes.sm,
+  },
   input: {
     height: 56,
     borderRadius: 12,
@@ -61,6 +66,11 @@ export const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     fontSize: typography.sizes.md,
     color: colors.textPrimary,
+  },
+  textArea: {
+    height: 100,
+    paddingTop: spacing.md,
+    textAlignVertical: 'top',
   },
   amountBox: {
     flexDirection: 'row',
@@ -81,7 +91,7 @@ export const styles = StyleSheet.create({
     flex: 1,
     fontSize: 18,
     fontWeight: '600',
-    color: colors.primary,
+    color: colors.textPrimary,
   },
   dateBox: {
     height: 56,
@@ -115,19 +125,13 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderWidth: 1,
     borderColor: colors.border,
-  },
-  statusChipActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
+    minWidth: 80,
+    alignItems: 'center',
   },
   statusChipText: {
     fontSize: typography.sizes.sm,
     color: colors.textSecondary,
     fontWeight: '500',
-  },
-  statusChipTextActive: {
-    color: colors.white,
-    fontWeight: '600',
   },
   footer: {
     padding: spacing.md,
@@ -143,11 +147,15 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   submitBtnDisabled: {
-    backgroundColor: colors.textSecondary,
+    backgroundColor: '#E5E7EB',
+    opacity: 1,
   },
   submitText: {
     color: colors.white,
     fontSize: typography.sizes.lg,
     fontWeight: '700',
+  },
+  submitTextDisabled: {
+    color: '#6B7280',
   },
 });

@@ -35,14 +35,17 @@ export type RootStackParamList = {
   /* Project-centric flows */
   ProjectDetailOwner: {
     projectId: string;
+    refresh?: boolean;
   };
 
   ProjectDetailSupervisor: {
     projectId: string;
+    refresh?: boolean;
   };
 
   AddExpense: {
     projectId: string;
+    refresh?: boolean;
   };
 
   /* Owner-only */

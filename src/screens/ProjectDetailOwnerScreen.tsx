@@ -65,6 +65,7 @@ type ExpenseStatus = 'pending' | 'approved' | 'rejected' | 'all';
 // Extended Expense type with status
 interface ExtendedBackendExpense extends BackendExpense {
   status?: ExpenseStatus;
+  title?: string;
 }
 
 // Note: ExpenseFilters is now imported from expenseService
@@ -153,7 +154,7 @@ export default function ProjectDetailOwnerScreen() {
   
   // Filter state
   const [filters, setFilters] = useState<FilterState>({
-    dateRange: 'month',
+    dateRange: 'all',
     customStartDate: null,
     customEndDate: null,
     categories: [],
@@ -334,23 +335,42 @@ const debouncedFetch = useCallback(() => {
   }, 500);
 }, [fetchData]);
 
-// Update your useEffect cleanup:
+// FIX: Replaced problematic useEffect + useFocusEffect with a single useFocusEffect
+// The useEffect was causing issues due to missing debouncedFetch in dependencies
+// and was redundant with the useFocusEffect below
+
+// Focus effect - fetch data when screen comes into focus
+useFocusEffect(
+  useCallback(() => {
+    fetchData();
+    
+    return () => {
+      // Cleanup: clear any pending timeouts when unmounting or refocusing
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [fetchData])
+);
+
+// FIX: Proper filter change detection - use primitive values in dependency array
+// This triggers a debounced fetch only when filter values actually change
 useEffect(() => {
-  if (!loading) {
+  // Skip initial mount - useFocusEffect handles that
+  const timer = setTimeout(() => {
     debouncedFetch();
-  }
+  }, 300); // Short debounce for filter changes
   
-  return () => {
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
-  };
-}, [filters.categories, filters.dateRange, filters.minAmount, filters.maxAmount, filters.status, filters.searchQuery]);  // Focus effect
-  useFocusEffect(
-    useCallback(() => {
-      fetchData();
-    }, [fetchData])
-  );
+  return () => clearTimeout(timer);
+}, [
+  filters.dateRange, 
+  filters.customStartDate?.toISOString(), 
+  filters.customEndDate?.toISOString(),
+  filters.status,
+  filters.searchQuery,
+  // For array, we'll just trigger on length changes for major filter changes
+  filters.categories.length,
+]);
 
   // Sort expenses
   const sortedExpenses = useMemo(() => {
@@ -381,7 +401,7 @@ useEffect(() => {
       if (option) {
         chips.push({
           id: 'dateRange',
-          label: `Date: ${option.label}`,
+          label: `${option.label}`,
           onRemove: () => setFilters(prev => ({ ...prev, dateRange: 'all' })),
         });
       }
@@ -556,15 +576,15 @@ const renderExpenseItem = useCallback(({ item }: { item: ExtendedBackendExpense 
       <View style={{ flex: 1 }}>
         <View style={styles.expenseTop}>
           <Text numberOfLines={1} style={styles.expenseTitle}>
-            {item.category}
+            {item.title || item.category}
           </Text>
           <Text style={styles.expenseAmount}>
             {formatCurrency(item.amount)}
           </Text>
         </View>
         <View style={styles.expenseBottom}>
-          <Text style={styles.expenseMeta}>
-            {item.description || 'No description'} •{' '}
+          <Text numberOfLines={1} style={styles.expenseMeta}>
+            {item.description ? `${item.description} • ` : ''}
             {new Date(item.expense_date).toLocaleDateString('en-IN', {
               day: 'numeric',
               month: 'short',
@@ -627,17 +647,17 @@ const renderGridItem = useCallback(({ item }: { item: ExtendedBackendExpense }) 
 
   const getCategoryEmoji = (category: string): string => {
     const emojis: Record<string, string> = {
-      'Materials': '📦',
+      'Materials': '🧱',
       'Labor': '👷',
-      'Machinery': '🚜',
+      'Machinery': '🔧',
       'Transport': '🚚',
       'Survey Equipment': '📐',
-      'Permits': '📋',
+      'Permits': '📄',
       'Utilities': '💡',
       'Subcontractor': '🤝',
-      'Miscellaneous': '📌',
+      'Miscellaneous': '📦',
     };
-    return emojis[category] || '📌';
+    return emojis[category] || '📦';
   };
 
   if (loading) {
@@ -656,12 +676,13 @@ const renderGridItem = useCallback(({ item }: { item: ExtendedBackendExpense }) 
           style={styles.iconBtn}
           onPress={() => navigation.goBack()}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          accessibilityLabel="Go back"
         >
-          <Text style={styles.headerIcon}>←</Text>
+          <Text style={styles.headerIcon}>← Back</Text>
         </Pressable>
 
         <Text style={styles.headerTitle} numberOfLines={1}>
-          {project?.name || 'Project Details'}
+          {project?.name ? `${project.name} — Expenses` : 'Project Details'}
         </Text>
 
         <View style={styles.headerActions}>
@@ -726,26 +747,32 @@ const renderGridItem = useCallback(({ item }: { item: ExtendedBackendExpense }) 
         contentContainerStyle={styles.statsContainer}
       >
         <View style={styles.statCard}>
+          <Text style={styles.statIcon}>💰</Text>
           <Text style={styles.statLabel}>Total</Text>
           <Text style={styles.statValue}>{formatCurrency(stats.totalAmount)}</Text>
         </View>
         <View style={styles.statCard}>
+          <Text style={styles.statIcon}>📋</Text>
           <Text style={styles.statLabel}>Count</Text>
           <Text style={styles.statValue}>{stats.expenseCount}</Text>
         </View>
         <View style={styles.statCard}>
+          <Text style={styles.statIcon}>📊</Text>
           <Text style={styles.statLabel}>Average</Text>
           <Text style={styles.statValue}>{formatCurrency(stats.averageAmount)}</Text>
         </View>
         <View style={[styles.statCard, styles.statPending]}>
+          <Text style={styles.statIcon}>⏳</Text>
           <Text style={styles.statLabel}>Pending</Text>
           <Text style={styles.statValue}>{stats.pendingCount}</Text>
         </View>
         <View style={[styles.statCard, styles.statApproved]}>
+          <Text style={styles.statIcon}>✅</Text>
           <Text style={styles.statLabel}>Approved</Text>
           <Text style={styles.statValue}>{stats.approvedCount}</Text>
         </View>
         <View style={[styles.statCard, styles.statRejected]}>
+          <Text style={styles.statIcon}>❌</Text>
           <Text style={styles.statLabel}>Rejected</Text>
           <Text style={styles.statValue}>{stats.rejectedCount}</Text>
         </View>
@@ -753,32 +780,45 @@ const renderGridItem = useCallback(({ item }: { item: ExtendedBackendExpense }) 
 
       {/* Filter Chips */}
       {activeFilterChips.length > 0 && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.chipScroll}
-          contentContainerStyle={styles.chipContainer}
-        >
-          {activeFilterChips.map(chip => (
-            <View key={chip.id} style={styles.chip}>
-              <Text style={styles.chipText}>{chip.label}</Text>
-              <Pressable onPress={chip.onRemove} hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}>
-                <Text style={styles.chipRemove}>✕</Text>
+        <View style={styles.chipSection}>
+          <Text style={styles.chipSectionTitle}>Active Filters:</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.chipScroll}
+            contentContainerStyle={styles.chipContainer}
+          >
+            {activeFilterChips.map(chip => (
+              <View key={chip.id} style={styles.chip}>
+                <Text style={styles.chipText}>{chip.label}</Text>
+                <Pressable onPress={chip.onRemove} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                  <Text style={styles.chipRemove}>×</Text>
+                </Pressable>
+              </View>
+            ))}
+            {activeFilterChips.length > 1 && (
+              <Pressable onPress={clearAllFilters}>
+                <Text style={styles.clearAllText}>Clear all</Text>
               </Pressable>
-            </View>
-          ))}
-          {activeFilterChips.length > 1 && (
-            <Pressable onPress={clearAllFilters}>
-              <Text style={styles.clearAllText}>Clear all</Text>
-            </Pressable>
-          )}
-        </ScrollView>
+            )}
+          </ScrollView>
+        </View>
       )}
 
       {/* Filters Panel */}
       {showFilters && (
         <View style={styles.filtersPanel}>
-          <ScrollView showsVerticalScrollIndicator={false}>
+          {/* Header */}
+          <View style={styles.filterPanelHeader}>
+            <Text style={styles.filterPanelTitle}>Filters</Text>
+            <Pressable onPress={() => setShowFilters(false)}>
+              <Text style={styles.filterPanelClose}>✕</Text>
+            </Pressable>
+          </View>
+          <ScrollView 
+            showsVerticalScrollIndicator={false} 
+            contentContainerStyle={styles.filterScrollContent}
+          >
             {/* Date Range */}
             <Text style={styles.filterSectionTitle}>Date Range</Text>
             <View style={styles.filterOptions}>
@@ -896,14 +936,20 @@ const renderGridItem = useCallback(({ item }: { item: ExtendedBackendExpense }) 
               <Text style={styles.applyButtonText}>Apply Filters</Text>
             </Pressable>
           </ScrollView>
+          {/* Sticky Footer */}
+          <View style={styles.filterPanelFooter}>
+            <Pressable style={styles.applyButton} onPress={() => setShowFilters(false)}>
+              <Text style={styles.applyButtonText}>Apply Filters</Text>
+            </Pressable>
+          </View>
         </View>
       )}
 
       {/* Main Content */}
-      <View style={{ flex: 1 }}>
+      <View style={{ flexGrow: 1, flexShrink: 1 }}>
         {sortedExpenses.length === 0 ? (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyStateEmoji}>📊</Text>
+            <Text style={styles.emptyStateEmoji}>🧾</Text>
             <Text style={styles.emptyStateTitle}>No expenses found</Text>
             <Text style={styles.emptyStateText}>
               Try adjusting your filters or add a new expense
@@ -1079,6 +1125,11 @@ const renderGridItem = useCallback(({ item }: { item: ExtendedBackendExpense }) 
               >
                 <Text style={styles.datePickerApplyText}>Apply Date Range</Text>
               </Pressable>
+              {!tempStartDate || !tempEndDate ? (
+                <Text style={styles.datePickerHelperText}>
+                  Select both start and end dates to continue
+                </Text>
+              ) : null}
             </View>
           </View>
         </Pressable>

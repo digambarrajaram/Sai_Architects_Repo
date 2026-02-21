@@ -130,7 +130,10 @@ export default function LoginScreen() {
               disabled={!isFormValid || loading || authLoading}
             >
               {loading || authLoading ? (
-                <ActivityIndicator color="#fff" />
+                <View style={styles.loadingButtonContent}>
+                  <ActivityIndicator color="#fff" size="small" />
+                  <Text style={styles.buttonLoadingText}>Signing in...</Text>
+                </View>
               ) : (
                 <Text style={styles.buttonText}>
                   Sign In Securely
@@ -192,13 +195,14 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   logo: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     backgroundColor: '#007bff',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
+    overflow: 'visible',
     ...shadowPresets.button,
   },
   logoIcon: {
@@ -261,12 +265,23 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: {
     backgroundColor: '#6c757d',
-    opacity: 0.6,
+    opacity: 1,
   },
   buttonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  buttonLoadingText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  loadingButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   forgot: {
     color: '#6c757d',

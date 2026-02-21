@@ -47,10 +47,20 @@ export const styles = StyleSheet.create({
     paddingTop: spacing.lg,
   },
   sectionLabel: {
-    fontSize: typography.sizes.sm,
-    fontWeight: '700',
-    color: colors.textSecondary,
+    fontSize: typography.sizes.md,
+    fontWeight: '500',
+    color: colors.textPrimary,
     marginBottom: spacing.xs,
+  },
+  input: {
+    height: 56,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.white,
+    paddingHorizontal: spacing.md,
+    fontSize: typography.sizes.md,
+    color: colors.textPrimary,
   },
   readOnlyField: {
     flexDirection: 'row',
@@ -73,22 +83,22 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.white,
-    borderRadius: 16,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
     paddingHorizontal: spacing.md,
-    height: 80,
+    height: 56,
   },
   currency: {
-    fontSize: 28,
+    fontSize: 18,
     color: colors.textSecondary,
-    marginRight: spacing.xs,
+    marginRight: 2,
   },
   amountInput: {
     flex: 1,
-    fontSize: 36,
-    fontWeight: '700',
-    color: colors.primary,
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.textPrimary,
   },
   divider: {
     height: 1,
@@ -136,6 +146,15 @@ export const styles = StyleSheet.create({
   expand: {
     fontSize: typography.sizes.md,
     color: colors.textSecondary,
+  },
+  selectBoxError: {
+    borderColor: colors.error,
+    borderWidth: 2,
+  },
+  errorText: {
+    fontSize: typography.sizes.sm,
+    color: colors.error,
+    marginTop: spacing.xs,
   },
   textArea: {
     minHeight: 100,
@@ -256,6 +275,33 @@ export const styles = StyleSheet.create({
     fontSize: typography.sizes.md,
     color: colors.primary,
     fontWeight: '700',
+  },
+  searchBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.backgroundLight,
+    borderRadius: 12,
+    paddingHorizontal: spacing.sm,
+    marginHorizontal: spacing.md,
+    marginTop: spacing.sm,
+    marginBottom: spacing.md,
+    height: 44,
+  },
+  searchIcon: {
+    fontSize: typography.sizes.md,
+    marginRight: spacing.xs,
+    color: colors.textSecondary,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: typography.sizes.md,
+    color: colors.textPrimary,
+    padding: 0,
+  },
+  clearIcon: {
+    fontSize: typography.sizes.md,
+    color: colors.textSecondary,
+    padding: spacing.xs,
   },
   // Date picker styles
   dateDisplay: {

@@ -305,7 +305,14 @@ export default function ProjectListScreen() {
 
       {/* Project List */}
       <FlatList
-        data={projects}
+        data={Array.from(new Map(
+          (searchQuery.trim()
+            ? projects.filter(p => 
+                p.name.toLowerCase().includes(searchQuery.toLowerCase())
+              )
+            : projects
+          ).map(p => [p.id, p])
+        ).values())}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <ProjectCard

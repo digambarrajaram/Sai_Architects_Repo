@@ -74,13 +74,18 @@ export const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   filterChip: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
     borderRadius: 20,
     backgroundColor: colors.backgroundLight,
     borderWidth: 1,
     borderColor: colors.border,
-    marginRight: spacing.xs,
+    marginRight: spacing.sm,
+    minWidth: 80,
+    maxWidth: 120,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   filterChipActive: {
     backgroundColor: colors.primary,
@@ -89,9 +94,11 @@ export const styles = StyleSheet.create({
   filterChipText: {
     fontSize: typography.sizes.sm,
     color: colors.textSecondary,
+    fontWeight: '500',
   },
   filterChipTextActive: {
-    color: colors.textPrimary,
+    color: colors.white,
+    fontWeight: '600',
   },
   listContent: {
     padding: spacing.md,

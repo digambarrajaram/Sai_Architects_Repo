@@ -16,10 +16,20 @@ CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id);
 
 -- Step 4: Add foreign key constraint (optional, but recommended)
 -- This ensures referential integrity with auth.users table
-ALTER TABLE audit_logs 
-ADD CONSTRAINT fk_audit_logs_user_id 
-FOREIGN KEY (user_id) REFERENCES auth.users(id) 
-ON DELETE SET NULL;
+-- Use DO block to check if constraint exists before adding
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'fk_audit_logs_user_id' 
+        AND table_name = 'audit_logs'
+    ) THEN
+        ALTER TABLE audit_logs 
+        ADD CONSTRAINT fk_audit_logs_user_id 
+        FOREIGN KEY (user_id) REFERENCES auth.users(id) 
+        ON DELETE SET NULL;
+    END IF;
+END $$;
 
 -- =====================================================
 -- Update or Create Trigger Function for audit_logs
@@ -114,10 +124,11 @@ BEGIN
         ELSE
             project_id_value := NEW.project_id;
             record_id := NEW.id::TEXT;
-        EXCEPTION
-            WHEN undefined_column THEN
-                project_id_value := NULL;
-        END;
+        END IF;
+    EXCEPTION
+        WHEN undefined_column THEN
+            project_id_value := NULL;
+            record_id := NULL;
     END;
 
     -- Insert audit record

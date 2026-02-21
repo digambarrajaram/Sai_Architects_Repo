@@ -4,10 +4,10 @@ import {
   Text,
   ScrollView,
   FlatList,
-  StyleSheet,
   Pressable,
   RefreshControl,
   Alert,
+  SafeAreaView,
 } from 'react-native';
 import {
   useNavigation,
@@ -22,34 +22,30 @@ import {
   ProjectWithExpenses,
   ProjectServiceError,
 } from '../services/projectService';
-import {
-  expenseService,
-  BackendExpense,
-} from '../services/expenseService';
-import { auditLogService } from '../services/auditLogService';
+import { expenseService, BackendExpense } from '../services/expenseService';
 import { LoadingState } from '../components/common/LoadingState';
 import { ErrorState } from '../components/common/ErrorState';
 import { styles } from './styles/project-detail.styles';
+// ─── Types ────────────────────────────────────────────────────────────────────
 
-// Extended type with status
 interface ExpenseWithStatus extends BackendExpense {
   status?: 'pending' | 'approved' | 'rejected';
 }
 
 type DateFilterType = 'daily' | 'weekly' | 'monthly' | 'all';
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 const getDateRange = (
   filterType: DateFilterType
 ): { start: Date | null; end: Date | null } => {
-  if (filterType === 'all') {
-    return { start: null, end: null };
-  }
+  if (filterType === 'all') return { start: null, end: null };
 
   const now = new Date();
   const end = new Date(now);
   end.setHours(23, 59, 59, 999);
 
-  let start = new Date(now);
+  const start = new Date(now);
 
   switch (filterType) {
     case 'daily':
@@ -68,36 +64,77 @@ const getDateRange = (
   return { start, end };
 };
 
-// Helper function to safely format date
-const formatDate = (dateString: string): string => {
+const safeFormatDate = (dateString: string): string => {
   try {
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) {
-      return 'Invalid date';
-    }
+    if (isNaN(date.getTime())) return 'Invalid date';
     return date.toLocaleDateString('en-IN', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
     });
-  } catch (error) {
+  } catch {
     return 'Invalid date';
   }
 };
+
+const formatCurrency = (amount: number): string =>
+  new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+
+const FILTER_OPTIONS: { value: DateFilterType; label: string }[] = [
+  { value: 'daily', label: 'Today' },
+  { value: 'weekly', label: 'This Week' },
+  { value: 'monthly', label: 'This Month' },
+  { value: 'all', label: 'All Time' },
+];
+
+// ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function ProjectDetailSupervisorScreen() {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, 'ProjectDetailSupervisor'>>();
   const { projectId } = route.params;
 
+  // ── State ────────────────────────────────────────────────────────────────────
   const [project, setProject] = useState<ProjectWithExpenses | null>(null);
-  const [allExpenses, setAllExpenses] = useState<ExpenseWithStatus[]>([]);
+  const [expenses, setExpenses] = useState<ExpenseWithStatus[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dateFilter, setDateFilter] = useState<DateFilterType>('daily');
 
-  const fetchData = useCallback(
+  // ── Data Fetching ─────────────────────────────────────────────────────────────
+
+  const fetchProjectDetails = useCallback(async () => {
+    const projectData = await projectService.getProjectById(projectId);
+    if (!projectData) throw new Error('Project not found');
+    setProject(projectData);
+  }, [projectId]);
+
+  const fetchExpenses = useCallback(async () => {
+    const dateRange = getDateRange(dateFilter);
+    const filters: Record<string, Date> = {};
+    if (dateRange.start) filters.startDate = dateRange.start;
+    if (dateRange.end) filters.endDate = dateRange.end;
+
+    const data = await expenseService.getExpensesByProject(projectId, filters);
+
+    // Map status for UI display (replace with real backend field when available)
+    const withStatus: ExpenseWithStatus[] = data.map((exp, index) => ({
+      ...exp,
+      status:
+        index % 3 === 0 ? 'approved' : index % 3 === 1 ? 'pending' : 'rejected',
+    }));
+
+    setExpenses(withStatus);
+  }, [projectId, dateFilter]);
+
+  const loadAll = useCallback(
     async (isRefresh = false) => {
       try {
         if (isRefresh) {
@@ -105,44 +142,17 @@ export default function ProjectDetailSupervisorScreen() {
         } else {
           setLoading(true);
         }
-
         setError(null);
 
-        const projectData = await projectService.getProjectById(projectId);
-
-        if (!projectData) {
-          setError('Project not found');
-          return;
-        }
-
-        setProject(projectData);
-
-        const dateRange = getDateRange(dateFilter);
-        const filters: any = {};
-        
-        if (dateRange.start) filters.startDate = dateRange.start;
-        if (dateRange.end) filters.endDate = dateRange.end;
-
-        const expensesData = await expenseService.getExpensesByProject(
-          projectId,
-          filters
-        );
-
-        // Add mock status for demo purposes
-        // In production, this would come from the backend
-        const expensesWithStatus: ExpenseWithStatus[] = expensesData.map((exp, index) => ({
-          ...exp,
-          status: index % 3 === 0 ? 'approved' : index % 3 === 1 ? 'pending' : 'rejected',
-        }));
-
-        setAllExpenses(expensesWithStatus);
+        await fetchProjectDetails();
+        await fetchExpenses();
       } catch (err) {
-        const errorMessage = err instanceof ProjectServiceError
-          ? err.message
-          : 'Failed to load project details';
+        const msg =
+          err instanceof ProjectServiceError
+            ? err.message
+            : (err as Error).message || 'Failed to load project details';
+        setError(msg);
 
-        setError(errorMessage);
-        
         if (__DEV__) {
           console.error('[ProjectDetailSupervisor] Error:', err);
         }
@@ -151,35 +161,40 @@ export default function ProjectDetailSupervisorScreen() {
         setRefreshing(false);
       }
     },
-    [projectId, dateFilter]
+    [fetchProjectDetails, fetchExpenses]
   );
 
+  // ── Auto-refresh on screen focus (also triggered after AddExpense navigate back) ──
+  // FIX: Combined into single useFocusEffect and properly handled refresh param
   useFocusEffect(
     useCallback(() => {
-      fetchData();
-    }, [fetchData])
+      // Always load data on focus
+      loadAll();
+      
+      // Check and clear refresh param after load
+      if (route.params?.refresh) {
+        navigation.setParams({ refresh: undefined });
+      }
+    }, [loadAll, route.params, navigation])
   );
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
+  // FIX: Handle filter changes - useEffect to trigger fetch when dateFilter changes
+  useEffect(() => {
+    // Skip initial mount (useFocusEffect handles that)
+    const timer = setTimeout(() => {
+      fetchExpenses();
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, [dateFilter, fetchExpenses]);
 
-  const navigateToExpenseDetail = useCallback((expenseId: string) => {
-    // Since ExpenseDetail might not be implemented yet
-    Alert.alert(
-      'Expense Details',
-      `Viewing expense: ${expenseId}`,
-      [{ text: 'OK' }]
-    );
-    // When implemented:
-    // navigation.navigate('ExpenseDetail', { expenseId });
-  }, []);
+  // ── Correct total calculation ─────────────────────────────────────────────────
+  const totalExpense = useMemo(
+    () => expenses.reduce((sum, item) => sum + Number(item.amount), 0),
+    [expenses]
+  );
 
+  // ── Status helpers ────────────────────────────────────────────────────────────
   const getStatusStyle = useCallback((status?: string) => {
     switch (status) {
       case 'approved':
@@ -191,44 +206,50 @@ export default function ProjectDetailSupervisorScreen() {
     }
   }, []);
 
-  const getStatusText = useCallback((status?: string): string => {
-    return (status || 'pending').toUpperCase();
+  const getStatusText = useCallback(
+    (status?: string) => (status || 'pending').toUpperCase(),
+    []
+  );
+
+  const navigateToExpenseDetail = useCallback((expenseId: string) => {
+    Alert.alert('Expense Details', `Viewing expense: ${expenseId}`, [
+      { text: 'OK' },
+    ]);
   }, []);
 
+  // ── Render item ───────────────────────────────────────────────────────────────
   const renderExpenseItem = useCallback(
-    ({ item }: { item: ExpenseWithStatus }) => {
-      return (
-        <Pressable
-          style={styles.expenseItem}
-          onPress={() => navigateToExpenseDetail(item.id)}
-          android_ripple={{ color: '#e2e8f0' }}
-        >
-          <View style={styles.expenseIcon} />
-          <View style={{ flex: 1 }}>
-            <View style={styles.expenseTop}>
-              <Text numberOfLines={1} style={styles.expenseTitle}>
-                {item.category}
+    ({ item }: { item: ExpenseWithStatus }) => (
+      <Pressable
+        style={styles.expenseItem}
+        onPress={() => navigateToExpenseDetail(item.id)}
+        android_ripple={{ color: '#e2e8f0' }}
+      >
+        <View style={[styles.expenseIcon, { backgroundColor: '#e2e8f0' }]} />
+        <View style={{ flex: 1 }}>
+          <View style={styles.expenseTop}>
+            <Text numberOfLines={1} style={styles.expenseTitle}>
+              {item.category}
+            </Text>
+            <Text style={styles.expenseAmount}>
+              {formatCurrency(Number(item.amount))}
+            </Text>
+          </View>
+          <View style={styles.expenseBottom}>
+            <Text style={styles.expenseMeta}>
+              {item.description ? `${item.description} • ` : ''}
+              {safeFormatDate(item.expense_date)}
+            </Text>
+            <View style={[styles.statusPill, getStatusStyle(item.status)]}>
+              <Text style={styles.statusPillText}>
+                {getStatusText(item.status)}
               </Text>
-              <Text style={styles.expenseAmount}>
-                {formatCurrency(item.amount)}
-              </Text>
-            </View>
-            <View style={styles.expenseBottom}>
-              <Text style={styles.expenseMeta}>
-                {item.description || 'No description'} •{' '}
-                {formatDate(item.expense_date)}
-              </Text>
-              <View style={[styles.statusPill, getStatusStyle(item.status)]}>
-                <Text style={styles.statusPillText}>
-                  {getStatusText(item.status)}
-                </Text>
-              </View>
             </View>
           </View>
-        </Pressable>
-      );
-    },
-    [formatCurrency, getStatusStyle, getStatusText, navigateToExpenseDetail]
+        </View>
+      </Pressable>
+    ),
+    [navigateToExpenseDetail, getStatusStyle, getStatusText]
   );
 
   const keyExtractor = useCallback(
@@ -236,141 +257,126 @@ export default function ProjectDetailSupervisorScreen() {
     []
   );
 
-  const filterOptions: { value: DateFilterType; label: string }[] = [
-    { value: 'daily', label: 'Today' },
-    { value: 'weekly', label: 'This Week' },
-    { value: 'monthly', label: 'This Month' },
-    { value: 'all', label: 'All Time' },
-  ];
-
-  // Calculate totals
-  const totalAmount = useMemo(() => {
-    return allExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-  }, [allExpenses]);
-
-  if (loading) {
-    return <LoadingState />;
-  }
+  // ── Loading / Error states ────────────────────────────────────────────────────
+  if (loading) return <LoadingState />;
 
   if (error) {
-    return (
-      <ErrorState
-        message={error}
-        onRetry={fetchData}
-      />
-    );
+    return <ErrorState message={error} onRetry={() => loadAll()} />;
   }
 
+  // ── Render ────────────────────────────────────────────────────────────────────
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Pressable
-          style={styles.iconBtn}
-          onPress={() => navigation.goBack()}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <Text style={styles.headerIcon}>←</Text>
-        </Pressable>
-
-        <Text style={styles.headerTitle} numberOfLines={1}>
-          {project?.name || 'Project Details'}
-        </Text>
-
-        <View style={styles.headerRight}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#f8fafc' }}>
+      <View style={{ flex: 1 }}>
+        {/* ── Header ──────────────────────────────────────────────────────────── */}
+        <View style={styles.header}>
           <Pressable
             style={styles.iconBtn}
+            onPress={() => navigation.goBack()}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Text style={styles.headerIcon}>⋮</Text>
+            <Text style={styles.headerIcon}>←</Text>
           </Pressable>
+
+          <Text style={styles.headerTitle} numberOfLines={1}>
+            {project?.name || 'Project Details'}
+          </Text>
+
+          <View style={styles.headerRight}>
+            <Pressable style={styles.iconBtn}>
+              <Text style={styles.headerIcon}>⋮</Text>
+            </Pressable>
+          </View>
         </View>
-      </View>
 
-      {/* Filter Bar */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.filterBar}
-        contentContainerStyle={styles.filterBarContent}
-      >
-        {filterOptions.map(option => (
-          <Pressable
-            key={option.value}
-            style={[
-              styles.filterChip,
-              dateFilter === option.value && styles.filterChipActive,
-            ]}
-            onPress={() => setDateFilter(option.value)}
-          >
-            <Text
-              style={[
-                styles.filterChipText,
-                dateFilter === option.value && styles.filterChipTextActive,
-              ]}
-            >
-              {option.label}
-            </Text>
-          </Pressable>
-        ))}
-      </ScrollView>
-
-      <View style={{ flex: 1 }}>
+        {/* ── Date Filter Bar ──────────────────────────────────────────────────── */}
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.filterBar}
+          contentContainerStyle={styles.filterBarContent}
+        >
+          {FILTER_OPTIONS.map((option) => (
+            <Pressable
+              key={option.value}
+              style={[
+                styles.filterChip,
+                dateFilter === option.value && styles.filterChipActive,
+              ]}
+              onPress={() => setDateFilter(option.value)}
+            >
+              <Text
+                style={[
+                  styles.filterChipText,
+                  dateFilter === option.value && styles.filterChipTextActive,
+                ]}
+              >
+                {option.label}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+
+        {/* ── Scrollable Body ──────────────────────────────────────────────────── */}
+        <ScrollView
+          contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
-              onRefresh={() => fetchData(true)}
+              onRefresh={() => loadAll(true)}
               colors={['#136dec']}
               tintColor="#136dec"
             />
           }
         >
+          {/* Project Card */}
           <View style={styles.card}>
             <Text style={styles.projectTitle}>
               {project?.name || 'Project'}
             </Text>
           </View>
 
-          <View style={styles.statsContainer}>
+          {/* Stats */}
+          <View style={[styles.statsContainer, { flexDirection: 'row', gap: 12, marginBottom: 16 }]}>
             <View style={styles.statItem}>
               <Text style={styles.statLabel}>Total Expenses</Text>
-              <Text style={styles.statValue}>
-                {formatCurrency(totalAmount)}
-              </Text>
+              <Text style={styles.statValue}>{formatCurrency(totalExpense)}</Text>
             </View>
             <View style={styles.statItem}>
               <Text style={styles.statLabel}>Count</Text>
-              <Text style={styles.statValue}>{allExpenses.length}</Text>
+              <Text style={styles.statValue}>{expenses.length}</Text>
             </View>
           </View>
 
+          {/* Section Header */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>
-              Expenses ({allExpenses.length})
+              Expenses ({expenses.length})
             </Text>
           </View>
 
-          {allExpenses.length === 0 ? (
+          {/* Empty State */}
+          {expenses.length === 0 ? (
             <View style={styles.emptyState}>
-              <Text style={styles.emptyStateEmoji}>📊</Text>
-              <Text style={styles.emptyStateTitle}>
-                No expenses recorded yet
-              </Text>
+              <Text style={styles.emptyStateEmoji}>🧾</Text>
+              <Text style={styles.emptyStateTitle}>No expenses recorded yet</Text>
               <Text style={styles.emptyStateText}>
                 Tap the + button to add your first expense
               </Text>
             </View>
           ) : (
             <FlatList
-              data={allExpenses}
+              data={expenses}
               renderItem={renderExpenseItem}
               keyExtractor={keyExtractor}
-              scrollEnabled={false}
               contentContainerStyle={styles.expenseListContainer}
             />
           )}
         </ScrollView>
 
+        {/* ── FAB ─────────────────────────────────────────────────────────────── */}
         <Pressable
           style={styles.fab}
           onPress={() => navigation.navigate('AddExpense', { projectId })}
@@ -378,7 +384,6 @@ export default function ProjectDetailSupervisorScreen() {
           <Text style={styles.fabIcon}>＋</Text>
         </Pressable>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
-

@@ -83,7 +83,22 @@ interface ProgressBarProps {
 
 export function ProgressBar({ progress, testID }: ProgressBarProps): React.ReactElement {
   const clampedProgress = Math.min(100, Math.max(0, progress));
-  const progressColor = clampedProgress > 80 ? colors.warning || '#FF9800' : colors.primary || '#007AFF';
+  
+  // Determine color based on progress percentage
+  let progressColor: string;
+  if (clampedProgress > 100) {
+    // Over budget - red
+    progressColor = '#DC2626'; // red-600
+  } else if (clampedProgress >= 90) {
+    // 90-100% - orange-red
+    progressColor = '#EA580C'; // orange-600
+  } else if (clampedProgress >= 75) {
+    // 75-90% - amber/orange
+    progressColor = '#F59E0B'; // amber-500
+  } else {
+    // 0-75% - green
+    progressColor = '#10B981'; // emerald-500
+  }
   
   return (
     <View style={styles.progressContainer} testID={testID}>
@@ -119,7 +134,11 @@ export function ProjectCard({
 
   return (
     <TouchableOpacity
-      style={[styles.card, style]}
+      style={[
+        styles.card,
+        totals && totals.remainingBudget < 0 && styles.cardOverBudget,
+        style,
+      ]}
       onPress={() => onPress(project.id)}
       testID={testID}
       accessibilityRole="button"
@@ -144,12 +163,19 @@ export function ProjectCard({
           </View>
           <View style={styles.budgetItem}>
             <Text style={styles.budgetLabel}>Remaining</Text>
-            <Text style={[
-              styles.budgetValue,
-              totals.remainingBudget < 0 && styles.budgetNegative,
-            ]}>
-              ₹{formatCurrency(totals.remainingBudget)}
-            </Text>
+            <View style={styles.remainingValueContainer}>
+              {totals.remainingBudget < 0 && (
+                <View style={styles.warningContainer}>
+                  <Text style={styles.warningIcon}>⚠️</Text>
+                </View>
+              )}
+              <Text style={[
+                styles.budgetValue,
+                totals.remainingBudget < 0 && styles.budgetNegative,
+              ]}>
+                {totals.remainingBudget < 0 ? '-' : ''}₹{formatCurrency(Math.abs(totals.remainingBudget))}
+              </Text>
+            </View>
           </View>
         </View>
       )}
@@ -243,12 +269,18 @@ function formatDate(dateString: string): string {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
-    ...shadowPresets.card,
-    minHeight: 120, // Fixed minimum height for testing
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    minHeight: 120,
   } as ViewStyle,
   header: {
     flexDirection: 'row',
@@ -314,8 +346,25 @@ const styles = StyleSheet.create({
     color: colors.text || '#333',
   } as TextStyle,
   budgetNegative: {
-    color: colors.error || '#D32F2F',
+    color: '#DC2626',
+    fontWeight: '700',
   } as TextStyle,
+  remainingValueContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  } as ViewStyle,
+  warningContainer: {
+    marginRight: 2,
+  } as ViewStyle,
+  warningIcon: {
+    fontSize: 14,
+  } as TextStyle,
+  cardOverBudget: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FCA5A5',
+    borderWidth: 2,
+  } as ViewStyle,
   progressRow: {
     marginTop: 12,
   } as ViewStyle,

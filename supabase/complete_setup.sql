@@ -38,14 +38,19 @@ CREATE TABLE IF NOT EXISTS expenses (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Audit logs table
+-- Audit logs table (consolidated snake_case schema)
 CREATE TABLE IF NOT EXISTS audit_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES profiles(id),
+  user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  project_id UUID REFERENCES projects(id) ON DELETE SET NULL,
+  user_name TEXT,
   action TEXT NOT NULL,
-  entity_type TEXT NOT NULL,
-  entity_id UUID,
-  metadata JSONB,
+  entity_type TEXT NOT NULL DEFAULT 'unknown',
+  entity_id TEXT,
+  details TEXT,
+  old_values JSONB,
+  new_values JSONB,
+  ip_address TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -287,8 +292,12 @@ CREATE INDEX IF NOT EXISTS idx_projects_created_by ON projects(created_by);
 CREATE INDEX IF NOT EXISTS idx_expenses_project_id ON expenses(project_id);
 CREATE INDEX IF NOT EXISTS idx_expenses_category ON expenses(category);
 CREATE INDEX IF NOT EXISTS idx_expenses_created_by ON expenses(created_by);
+-- Audit logs indexes (consolidated schema)
+CREATE INDEX IF NOT EXISTS idx_audit_logs_project_id ON audit_logs(project_id);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_entity_type ON audit_logs(entity_type);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at DESC);
 
 -- =====================================================
 -- 7. VERIFICATION QUERIES

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,19 +8,21 @@ import {
   StyleSheet,
   Modal,
   Alert,
-  ActivityIndicator,
   SafeAreaView,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
 import { useAuth } from '../context/AuthContext';
-import { expenseService, ExpenseServiceError, BackendExpenseCategory } from '../services/expenseService';
+import {
+  expenseService,
+  ExpenseServiceError,
+  BackendExpenseCategory,
+} from '../services/expenseService';
 import { auditLogService } from '../services/auditLogService';
 import { styles } from './styles/add-expense.styles';
-
 const CATEGORIES: BackendExpenseCategory[] = [
   'Materials',
   'Labor',
@@ -35,7 +37,7 @@ const CATEGORIES: BackendExpenseCategory[] = [
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'
+  'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
 export default function AddProjectExpenseScreen() {
@@ -44,24 +46,64 @@ export default function AddProjectExpenseScreen() {
   const { projectId } = route.params;
   const { user } = useAuth();
 
+  // Form state
   const [amount, setAmount] = useState('');
+  const [expenseTitle, setExpenseTitle] = useState('');
   const [category, setCategory] = useState<BackendExpenseCategory | null>(null);
-  const [expenseDate, setExpenseDate] = useState(new Date().toISOString().split('T')[0]);
+  const [expenseDate, setExpenseDate] = useState(
+    new Date().toISOString().split('T')[0]
+  );
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  
+  const [validationAttempted, setValidationAttempted] = useState(false);
+
   // Modal states
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  
-  // Date picker state
+  const [categorySearch, setCategorySearch] = useState('');
+
+  // Date picker temp state
   const [tempDay, setTempDay] = useState(new Date().getDate());
   const [tempMonth, setTempMonth] = useState(new Date().getMonth());
   const [tempYear, setTempYear] = useState(new Date().getFullYear());
 
+  // ─── Helpers ────────────────────────────────────────────────────────────────
+
+  const getDaysInMonth = (month: number, year: number) =>
+    new Date(year, month + 1, 0).getDate();
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  const openDatePicker = () => {
+    const current = new Date(expenseDate);
+    setTempDay(current.getDate());
+    setTempMonth(current.getMonth());
+    setTempYear(current.getFullYear());
+    setShowDatePicker(true);
+  };
+
+  const handleDateConfirm = () => {
+    const daysInMonth = getDaysInMonth(tempMonth, tempYear);
+    const validDay = Math.min(tempDay, daysInMonth);
+    const dateStr = `${tempYear}-${String(tempMonth + 1).padStart(2, '0')}-${String(
+      validDay
+    ).padStart(2, '0')}`;
+    setExpenseDate(dateStr);
+    setShowDatePicker(false);
+  };
+
+  // ─── Submit ──────────────────────────────────────────────────────────────────
+
   const handleSubmit = async () => {
+    setValidationAttempted(true);
     if (!amount || !category) {
-      Alert.alert('Validation Error', 'Please fill in all required fields');
       return;
     }
 
@@ -74,11 +116,11 @@ export default function AddProjectExpenseScreen() {
     setSubmitting(true);
 
     try {
-      // Create expense using the expense service
       const expenseInput = {
         project_id: projectId,
         amount: parsedAmount,
-        category: category,
+        title: expenseTitle.trim() || undefined,
+        category,
         description: notes || undefined,
         expense_date: expenseDate,
       };
@@ -87,14 +129,19 @@ export default function AddProjectExpenseScreen() {
         console.log('[AddProjectExpenseScreen] Creating expense:', expenseInput);
       }
 
-      // Use createExpenseDirect which works with both mock mode and Supabase
-      const createdExpense = await expenseService.createExpenseDirect(expenseInput, user?.id);
+      const createdExpense = await expenseService.createExpenseDirect(
+        expenseInput,
+        user?.id
+      );
 
       if (__DEV__) {
-        console.log('[AddProjectExpenseScreen] Expense created successfully:', createdExpense);
+        console.log(
+          '[AddProjectExpenseScreen] Expense created successfully:',
+          createdExpense
+        );
       }
 
-      // Log the action
+      // Audit log
       if (user) {
         await auditLogService.logAction({
           projectId,
@@ -104,81 +151,65 @@ export default function AddProjectExpenseScreen() {
           entityType: 'EXPENSE' as any,
           entityId: createdExpense.id,
           details: `Created expense: ${category} - ${notes || 'No description'} (₹${parsedAmount})`,
-          ipAddress: '192.168.1.100', // In production, get from device
+          ipAddress: '192.168.1.100',
         });
       }
 
-      // Debug: Log the expense data structure
-      if (__DEV__) {
-        console.log('[AddProjectExpenseScreen] Created expense details:', {
-          id: createdExpense.id,
-          project_id: createdExpense.project_id,
-          amount: createdExpense.amount,
-          category: createdExpense.category,
-          expense_date: createdExpense.expense_date,
-          created_by: createdExpense.created_by,
-          created_at: createdExpense.created_at,
-        });
-      }
-
-      // Navigate back to project details screen immediately after successful creation
-      // The useFocusEffect in ProjectDetailSupervisorScreen will refresh the data
+      // Navigate back to Project Details and signal a refresh
       navigation.goBack();
     } catch (error) {
-      const errorMessage = error instanceof ExpenseServiceError
-        ? error.message
-        : 'Failed to add expense. Please try again.';
-      
+      const errorMessage =
+        error instanceof ExpenseServiceError
+          ? error.message
+          : 'Failed to add expense. Please try again.';
+
       if (__DEV__) {
         console.error('[AddProjectExpenseScreen] Failed to create expense:', error);
       }
-      
+
       Alert.alert('Error', errorMessage);
     } finally {
       setSubmitting(false);
     }
   };
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
+  // ─── Auto-refresh parent screen ──────────────────────────────────────────────
+  useFocusEffect(
+    useCallback(() => {
+      const shouldRefresh = route.params?.refresh;
+      
+      if (shouldRefresh) {
+        // Clear the refresh param to prevent infinite loop
+        navigation.setParams({ refresh: undefined });
+        // Trigger parent refresh by navigating back
+        navigation.goBack();
+      }
+      
+      // Cleanup function (optional but good practice)
+      return () => {
+        // Any cleanup code can go here
+      };
+    }, [navigation])
+  );
 
-  const getDaysInMonth = (month: number, year: number) => {
-    return new Date(year, month + 1, 0).getDate();
-  };
-
-  const handleDateConfirm = () => {
-    const daysInMonth = getDaysInMonth(tempMonth, tempYear);
-    const validDay = Math.min(tempDay, daysInMonth);
-    const dateStr = `${tempYear}-${String(tempMonth + 1).padStart(2, '0')}-${String(validDay).padStart(2, '0')}`;
-    setExpenseDate(dateStr);
-    setShowDatePicker(false);
-  };
-
-  const openDatePicker = () => {
-    const currentDate = new Date(expenseDate);
-    setTempDay(currentDate.getDate());
-    setTempMonth(currentDate.getMonth());
-    setTempYear(currentDate.getFullYear());
-    setShowDatePicker(true);
-  };
+  // ─── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView 
-        style={styles.keyboardAvoidingView}
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#f8fafc' }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
-        {/* Top App Bar */}
+        {/* Header */}
         <View style={styles.header}>
-          <Pressable style={styles.cancelBtn} onPress={() => navigation.goBack()} testID="cancel-add-expense-btn" accessibilityLabel="Cancel add expense">
-            <Text style={styles.cancelText}>Cancel</Text>
+          <Pressable
+            style={styles.cancelBtn}
+            onPress={() => navigation.goBack()}
+            testID="cancel-add-expense-btn"
+            accessibilityLabel="Go back"
+          >
+            <Text style={styles.cancelText}>← Back</Text>
           </Pressable>
 
           <Text style={styles.headerTitle}>Add Expense</Text>
@@ -186,18 +217,16 @@ export default function AddProjectExpenseScreen() {
           <View style={{ width: 64 }} />
         </View>
 
-        {/* Scrollable Content */}
+        {/* Scrollable Body */}
         <View style={{ flex: 1 }}>
           <ScrollView
-            contentContainerStyle={{ paddingBottom: 20 }}
+            contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
+            showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={true}
-            bounces={true}
           >
             {/* Amount */}
             <View style={styles.section}>
-              <Text style={styles.sectionLabel}>AMOUNT</Text>
-
+              <Text style={styles.sectionLabel}>Amount</Text>
               <View style={styles.amountBox}>
                 <Text style={styles.currency}>₹</Text>
                 <TextInput
@@ -216,24 +245,36 @@ export default function AddProjectExpenseScreen() {
 
             {/* Category */}
             <View style={styles.field}>
-              <Text style={styles.label}>Category <Text style={styles.required}>*</Text></Text>
-              <Pressable 
-                style={styles.selectBox} 
+              <Text style={styles.label}>
+                Category <Text style={styles.required}>*</Text>
+              </Text>
+              <Pressable
+                style={[
+                  styles.selectBox,
+                  validationAttempted && !category && styles.selectBoxError,
+                ]}
                 testID="category-select"
                 onPress={() => setShowCategoryModal(true)}
               >
-                <Text style={category ? styles.selectValue : styles.selectPlaceholder}>
+                <Text
+                  style={category ? styles.selectValue : styles.selectPlaceholder}
+                >
                   {category || 'Select category'}
                 </Text>
                 <Text style={styles.expand}>⌄</Text>
               </Pressable>
+              {validationAttempted && !category && (
+                <Text style={styles.errorText}>Please select a category</Text>
+              )}
             </View>
 
             {/* Date */}
             <View style={styles.field}>
-              <Text style={styles.label}>Date of Expense <Text style={styles.required}>*</Text></Text>
-              <Pressable 
-                style={styles.selectBox} 
+              <Text style={styles.label}>
+                Date of Expense <Text style={styles.required}>*</Text>
+              </Text>
+              <Pressable
+                style={styles.selectBox}
                 testID="date-select"
                 onPress={openDatePicker}
               >
@@ -245,7 +286,8 @@ export default function AddProjectExpenseScreen() {
             {/* Notes */}
             <View style={styles.field}>
               <Text style={styles.label}>
-                Notes / Description <Text style={styles.optional}>(Optional)</Text>
+                Notes / Description{' '}
+                <Text style={styles.optional}>(Optional)</Text>
               </Text>
               <TextInput
                 multiline
@@ -257,19 +299,17 @@ export default function AddProjectExpenseScreen() {
                 testID="notes-input"
               />
             </View>
-
-            <View style={{ height: 40 }} />
           </ScrollView>
 
           {/* Sticky Footer */}
           <View style={styles.footer}>
-            <Pressable 
+            <Pressable
               style={[
-                styles.submitButton, 
-                (!amount || !category) && styles.submitButtonDisabled
-              ]} 
-              onPress={handleSubmit} 
-              testID="submit-expense-btn" 
+                styles.submitButton,
+                (!amount || !category || submitting) && styles.submitButtonDisabled,
+              ]}
+              onPress={handleSubmit}
+              testID="submit-expense-btn"
               accessibilityLabel="Submit expense"
               disabled={!amount || !category || submitting}
             >
@@ -280,14 +320,17 @@ export default function AddProjectExpenseScreen() {
           </View>
         </View>
 
-        {/* Category Selection Modal */}
+        {/* ── Category Modal ─────────────────────────────────────────────────── */}
         <Modal
           visible={showCategoryModal}
           transparent
           animationType="slide"
           onRequestClose={() => setShowCategoryModal(false)}
         >
-          <Pressable style={styles.modalOverlay} onPress={() => setShowCategoryModal(false)}>
+          <Pressable
+            style={styles.modalOverlay}
+            onPress={() => setShowCategoryModal(false)}
+          >
             <Pressable style={styles.modalContent} onPress={() => {}}>
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>Select Category</Text>
@@ -296,7 +339,24 @@ export default function AddProjectExpenseScreen() {
                 </Pressable>
               </View>
               <ScrollView>
-                {CATEGORIES.map((cat) => (
+                <View style={styles.searchBox}>
+                  <Text style={styles.searchIcon}>🔍</Text>
+                  <TextInput
+                    style={styles.searchInput}
+                    placeholder="Search categories..."
+                    placeholderTextColor="#94a3b8"
+                    value={categorySearch}
+                    onChangeText={setCategorySearch}
+                  />
+                  {categorySearch.length > 0 && (
+                    <Pressable onPress={() => setCategorySearch('')}>
+                      <Text style={styles.clearIcon}>✕</Text>
+                    </Pressable>
+                  )}
+                </View>
+                {CATEGORIES.filter(cat => 
+                  cat.toLowerCase().includes(categorySearch.toLowerCase())
+                ).map((cat) => (
                   <Pressable
                     key={cat}
                     style={[
@@ -326,14 +386,17 @@ export default function AddProjectExpenseScreen() {
           </Pressable>
         </Modal>
 
-        {/* Full Date Picker Modal */}
+        {/* ── Date Picker Modal ──────────────────────────────────────────────── */}
         <Modal
           visible={showDatePicker}
           transparent
           animationType="slide"
           onRequestClose={() => setShowDatePicker(false)}
         >
-          <Pressable style={styles.modalOverlay} onPress={() => setShowDatePicker(false)}>
+          <Pressable
+            style={styles.modalOverlay}
+            onPress={() => setShowDatePicker(false)}
+          >
             <Pressable style={styles.modalContent} onPress={() => {}}>
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>Select Date</Text>
@@ -341,7 +404,7 @@ export default function AddProjectExpenseScreen() {
                   <Text style={styles.modalClose}>✕</Text>
                 </Pressable>
               </View>
-              
+
               {/* Date Display */}
               <View style={datePickerStyles.dateDisplay}>
                 <Text style={datePickerStyles.dateDisplayText}>
@@ -349,39 +412,45 @@ export default function AddProjectExpenseScreen() {
                 </Text>
               </View>
 
-              {/* Date Pickers */}
+              {/* Pickers */}
               <View style={datePickerStyles.pickerContainer}>
-                {/* Month Selector */}
+                {/* Month */}
                 <View style={datePickerStyles.pickerColumn}>
                   <Text style={datePickerStyles.pickerLabel}>Month</Text>
                   <View style={datePickerStyles.pickerRow}>
-                    <Pressable 
+                    <Pressable
                       style={datePickerStyles.arrowBtn}
-                      onPress={() => setTempMonth((prev) => (prev - 1 + 12) % 12)}
+                      onPress={() =>
+                        setTempMonth((prev) => (prev - 1 + 12) % 12)
+                      }
                     >
                       <Text style={datePickerStyles.arrowText}>◀</Text>
                     </Pressable>
                     <View style={datePickerStyles.valueContainer}>
-                      <Text style={datePickerStyles.valueText}>{MONTHS[tempMonth]}</Text>
+                      <Text style={datePickerStyles.valueText}>
+                        {MONTHS[tempMonth]}
+                      </Text>
                     </View>
-                    <Pressable 
+                    <Pressable
                       style={datePickerStyles.arrowBtn}
-                      onPress={() => setTempMonth((prev) => (prev + 1) % 12)}
+                      onPress={() =>
+                        setTempMonth((prev) => (prev + 1) % 12)
+                      }
                     >
                       <Text style={datePickerStyles.arrowText}>▶</Text>
                     </Pressable>
                   </View>
                 </View>
 
-                {/* Day Selector */}
+                {/* Day */}
                 <View style={datePickerStyles.pickerColumn}>
                   <Text style={datePickerStyles.pickerLabel}>Day</Text>
                   <View style={datePickerStyles.pickerRow}>
-                    <Pressable 
+                    <Pressable
                       style={datePickerStyles.arrowBtn}
                       onPress={() => {
-                        const daysInMonth = getDaysInMonth(tempMonth, tempYear);
-                        setTempDay((prev) => (prev - 1 + daysInMonth - 1) % daysInMonth + 1);
+                        const days = getDaysInMonth(tempMonth, tempYear);
+                        setTempDay((prev) => ((prev - 2 + days) % days) + 1);
                       }}
                     >
                       <Text style={datePickerStyles.arrowText}>◀</Text>
@@ -389,11 +458,11 @@ export default function AddProjectExpenseScreen() {
                     <View style={datePickerStyles.valueContainer}>
                       <Text style={datePickerStyles.valueText}>{tempDay}</Text>
                     </View>
-                    <Pressable 
+                    <Pressable
                       style={datePickerStyles.arrowBtn}
                       onPress={() => {
-                        const daysInMonth = getDaysInMonth(tempMonth, tempYear);
-                        setTempDay((prev) => prev % daysInMonth + 1);
+                        const days = getDaysInMonth(tempMonth, tempYear);
+                        setTempDay((prev) => (prev % days) + 1);
                       }}
                     >
                       <Text style={datePickerStyles.arrowText}>▶</Text>
@@ -401,11 +470,11 @@ export default function AddProjectExpenseScreen() {
                   </View>
                 </View>
 
-                {/* Year Selector */}
+                {/* Year */}
                 <View style={datePickerStyles.pickerColumn}>
                   <Text style={datePickerStyles.pickerLabel}>Year</Text>
                   <View style={datePickerStyles.pickerRow}>
-                    <Pressable 
+                    <Pressable
                       style={datePickerStyles.arrowBtn}
                       onPress={() => setTempYear((prev) => prev - 1)}
                     >
@@ -414,7 +483,7 @@ export default function AddProjectExpenseScreen() {
                     <View style={datePickerStyles.valueContainer}>
                       <Text style={datePickerStyles.valueText}>{tempYear}</Text>
                     </View>
-                    <Pressable 
+                    <Pressable
                       style={datePickerStyles.arrowBtn}
                       onPress={() => setTempYear((prev) => prev + 1)}
                     >
@@ -424,8 +493,11 @@ export default function AddProjectExpenseScreen() {
                 </View>
               </View>
 
-              {/* Confirm Button */}
-              <Pressable style={datePickerStyles.confirmBtn} onPress={handleDateConfirm}>
+              {/* Confirm */}
+              <Pressable
+                style={datePickerStyles.confirmBtn}
+                onPress={handleDateConfirm}
+              >
                 <Text style={datePickerStyles.confirmBtnText}>Confirm</Text>
               </Pressable>
             </Pressable>
@@ -435,6 +507,8 @@ export default function AddProjectExpenseScreen() {
     </SafeAreaView>
   );
 }
+
+// ─── Date Picker Local Styles ─────────────────────────────────────────────────
 
 const datePickerStyles = StyleSheet.create({
   dateDisplay: {

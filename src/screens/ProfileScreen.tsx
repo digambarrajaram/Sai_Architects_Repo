@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   Pressable,
+  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
@@ -14,16 +15,38 @@ export default function ProfileScreen() {
   const { user, signOut } = useAuth();
   const role = user?.role;
 
+  // Handle logout with confirmation
+  const handleLogout = () => {
+    Alert.alert(
+      'Log Out',
+      'Are you sure you want to log out?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Log Out',
+          style: 'destructive',
+          onPress: () => signOut(),
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
   return (
     <View style={styles.root}>
       {/* Header */}
       <View style={styles.header}>
         <Pressable
-          style={styles.iconBtn}
+          style={styles.backBtn}
           onPress={() => navigation.goBack()}
           testID="profile-back-btn"
+          accessibilityLabel="Go back"
         >
-          <Text style={styles.icon}>←</Text>
+          <Text style={styles.backIcon}>←</Text>
+          <Text style={styles.backText}>Back</Text>
         </Pressable>
 
         <Text style={styles.headerTitle}>My Profile</Text>
@@ -48,6 +71,9 @@ export default function ProfileScreen() {
             <View style={styles.avatarWrapper}>
               <View style={styles.avatar}>
                 <Text style={styles.avatarText}>JC</Text>
+                <Pressable style={styles.cameraBtn}>
+                  <Text style={styles.cameraIcon}>📷</Text>
+                </Pressable>
               </View>
               <View style={styles.verified}>
                 <Text style={styles.verifiedIcon}>✔</Text>
@@ -56,6 +82,7 @@ export default function ProfileScreen() {
 
             <Text style={styles.name}>James Carter</Text>
             <Text style={styles.phone}>+1 (555) 123-4567</Text>
+            <Text style={styles.email}>owner@gmail.com</Text>
 
             <View style={styles.roleBadge}>
               <Text style={styles.roleText}>{role}</Text>
@@ -102,7 +129,7 @@ export default function ProfileScreen() {
               </View>
               <View style={styles.rowContent}>
                 <Text style={styles.rowTitle}>Language & Region</Text>
-                <Text style={styles.rowSub}>English (US)</Text>
+                <Text style={styles.rowSub}>English (IN) • INR (₹)</Text>
               </View>
               <Text style={styles.chevron}>›</Text>
             </View>
@@ -128,8 +155,8 @@ export default function ProfileScreen() {
             <View style={styles.divider} />
 
             <View style={styles.rowItem}>
-              <View style={[styles.rowIcon, styles.grayBg]}>
-                <Text style={styles.rowIconText}>📄</Text>
+              <View style={[styles.rowIcon, styles.slateBg]}>
+                <Text style={styles.rowIconText}>📋</Text>
               </View>
               <View style={styles.rowContent}>
                 <Text style={styles.rowTitle}>Terms & Policy</Text>
@@ -142,7 +169,7 @@ export default function ProfileScreen() {
           {/* Logout */}
           <Pressable
             style={styles.logoutBtn}
-            onPress={signOut}
+            onPress={handleLogout}
             testID="logout-button"
           >
             <Text style={styles.logoutIcon}>⎋</Text>
@@ -204,6 +231,22 @@ const styles = StyleSheet.create({
     width: 40,
     alignItems: 'center',
   },
+  backBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+  },
+  backIcon: {
+    fontSize: 18,
+    color: '#3b82f6',
+    marginRight: 4,
+  },
+  backText: {
+    fontSize: 16,
+    color: '#3b82f6',
+    fontWeight: '500',
+  },
   icon: {
     fontSize: 20,
     color: '#64748b',
@@ -238,6 +281,32 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '700',
     color: '#64748b',
+  },
+  cameraBtn: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#3b82f6',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: '#ffffff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  cameraIcon: {
+    fontSize: 16,
+  },
+  email: {
+    fontSize: 14,
+    color: '#64748b',
+    marginTop: 4,
   },
   verified: {
     position: 'absolute',
@@ -335,6 +404,7 @@ const styles = StyleSheet.create({
   purpleBg: { backgroundColor: '#ede9fe' },
   amberBg: { backgroundColor: '#fef3c7' },
   grayBg: { backgroundColor: '#e5e7eb' },
+  slateBg: { backgroundColor: '#cbd5e1' },
 
   logoutBtn: {
     flexDirection: 'row',
@@ -343,17 +413,19 @@ const styles = StyleSheet.create({
     gap: 8,
     padding: 16,
     borderRadius: 16,
-    backgroundColor: '#fee2e2',
+    backgroundColor: '#f1f5f9',
     marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
   },
   logoutIcon: {
     fontSize: 16,
-    color: '#dc2626',
+    color: '#64748b',
   },
   logoutText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#dc2626',
+    color: '#64748b',
   },
 
   version: {

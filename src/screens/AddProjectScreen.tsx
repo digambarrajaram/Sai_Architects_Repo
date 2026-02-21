@@ -19,11 +19,12 @@ import { projectService, ProjectServiceError } from '../services/projectService'
 import { auditLogService } from '../services/auditLogService';
 import { AuditAction, AuditEntityType } from '../types';
 import { styles } from './styles/add-project.styles';
+import { colors } from '../theme/colors';
 
 type ProjectStatus = 'active' | 'planning' | 'completed' | 'on_hold';
 
 const STATUS_OPTIONS: { label: string; value: ProjectStatus }[] = [
-  { label: 'Active', value: 'active' },
+  { label: 'In Progress', value: 'active' },
   { label: 'Planning', value: 'planning' },
   { label: 'Completed', value: 'completed' },
   { label: 'On Hold', value: 'on_hold' },
@@ -35,6 +36,7 @@ export default function AddProjectScreen() {
 
   const [name, setName] = useState('');
   const [budget, setBudget] = useState('');
+  const [description, setDescription] = useState('');
   const [dueDate, setDueDate] = useState(
     new Date().toISOString().split('T')[0]
   );
@@ -57,6 +59,21 @@ export default function AddProjectScreen() {
     if (!budget.trim() || isNaN(parseFloat(budget))) {
       Alert.alert('Error', 'Please enter a valid budget amount');
       return;
+    }
+
+    // Check for duplicate project name
+    try {
+      const existingProjects = await projectService.getProjects();
+      const isDuplicate = existingProjects.some(
+        (p) => p.name.toLowerCase() === name.trim().toLowerCase()
+      );
+      if (isDuplicate) {
+        Alert.alert('Error', 'A project with this name already exists.');
+        return;
+      }
+    } catch (err) {
+      // Continue if we can't check for duplicates
+      console.warn('Could not check for duplicate projects:', err);
     }
 
     try {
@@ -124,8 +141,9 @@ export default function AddProjectScreen() {
           style={styles.cancelBtn}
           onPress={() => navigation.goBack()}
           testID="cancel-btn"
+          accessibilityLabel="Go back"
         >
-          <Text style={styles.cancelText}>Cancel</Text>
+          <Text style={styles.cancelText}>← Back</Text>
         </Pressable>
 
         <Text style={styles.headerTitle}>New Project</Text>
@@ -160,7 +178,7 @@ export default function AddProjectScreen() {
               Budget <Text style={styles.required}>*</Text>
             </Text>
             <View style={styles.amountBox}>
-              <Text style={styles.currency}>$</Text>
+              <Text style={styles.currency}>₹</Text>
               <TextInput
                 placeholder="0.00"
                 placeholderTextColor="#cbd5e1"
@@ -198,31 +216,70 @@ export default function AddProjectScreen() {
           <View style={styles.field}>
             <Text style={styles.label}>Status</Text>
             <View style={styles.statusOptions}>
-              {STATUS_OPTIONS.map(option => (
-                <Pressable
-                  key={option.value}
-                  style={[
-                    styles.statusChip,
-                    status === option.value &&
-                      styles.statusChipActive,
-                  ]}
-                  onPress={() => setStatus(option.value)}
-                >
-                  <Text
+              {STATUS_OPTIONS.map(option => {
+                // Get status colors matching ProjectCard badges
+                const getStatusColors = (value: string) => {
+                  switch (value) {
+                    case 'planning':
+                      return { bg: '#DBEAFE', border: '#3B82F6', text: '#3B82F6' };
+                    case 'active':
+                      return { bg: '#DBEAFE', border: '#3B82F6', text: '#3B82F6' };
+                    case 'on_hold':
+                      return { bg: '#FEF3C7', border: '#F59E0B', text: '#F59E0B' };
+                    case 'completed':
+                      return { bg: '#D1FAE5', border: '#10B981', text: '#10B981' };
+                    default:
+                      return { bg: colors.primaryLight, border: colors.primary, text: colors.primary };
+                  }
+                };
+                const statusColors = getStatusColors(option.value);
+                const isActive = status === option.value;
+                
+                return (
+                  <Pressable
+                    key={option.value}
                     style={[
-                      styles.statusChipText,
-                      status === option.value &&
-                        styles.statusChipTextActive,
+                      styles.statusChip,
+                      isActive && {
+                        backgroundColor: statusColors.bg,
+                        borderColor: statusColors.border,
+                      },
                     ]}
+                    onPress={() => setStatus(option.value)}
                   >
-                    {option.label}
-                  </Text>
-                </Pressable>
-              ))}
+                    <Text
+                      style={[
+                        styles.statusChipText,
+                        isActive && {
+                          color: statusColors.text,
+                          fontWeight: '600',
+                        },
+                      ]}
+                    >
+                      {option.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
             </View>
           </View>
 
-          <View style={{ height: 40 }} />
+          {/* Description */}
+          <View style={styles.field}>
+            <Text style={styles.label}>Description <Text style={styles.optional}>(Optional)</Text></Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder="Enter project description..."
+              placeholderTextColor="#94a3b8"
+              value={description}
+              onChangeText={setDescription}
+              multiline
+              numberOfLines={4}
+              textAlignVertical="top"
+            />
+          </View>
+
+          <View style={{ height: 20 }} />
         </ScrollView>
       </View>
 
@@ -231,7 +288,7 @@ export default function AddProjectScreen() {
         <Pressable
           style={[
             styles.submitBtn,
-            (!name.trim() || !budget.trim()) &&
+            (!name.trim() || !budget.trim() || loading) &&
               styles.submitBtnDisabled,
           ]}
           onPress={handleSubmit}
@@ -240,7 +297,11 @@ export default function AddProjectScreen() {
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.submitText}>
+            <Text style={[
+              styles.submitText,
+              (!name.trim() || !budget.trim() || loading) &&
+                styles.submitTextDisabled,
+            ]}>
               Create Project
             </Text>
           )}
