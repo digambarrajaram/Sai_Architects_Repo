@@ -114,12 +114,15 @@ function MainTabs({ role }: { role: UserRole }) {
 
 export default function AppNavigator() {
   const { isAuthenticated, user, isAuthLoading } = useAuth();
+  
+  console.log('[AppNavigator] Rendering - isAuthenticated:', isAuthenticated, 'user:', user?.email, 'isAuthLoading:', isAuthLoading);
 
   // Get user role from user object (default to SUPERVISOR if null)
   const role = user?.role as UserRole || UserRole.SUPERVISOR;
 
   // Show branded loading screen during authentication transition
   if (isAuthLoading) {
+    console.log('[AppNavigator] Showing loading screen');
     return (
       <View style={styles.loadingContainer}>
         <View style={styles.logo}>
@@ -132,6 +135,7 @@ export default function AppNavigator() {
     );
   }
 
+  console.log('[AppNavigator] Showing', isAuthenticated ? 'MainTabs' : 'LoginScreen');
   return (
     <NavigationContainer ref={navigationRef}>
       {!isAuthenticated ? (

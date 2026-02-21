@@ -41,7 +41,15 @@ export default function ProfileScreen() {
         {
           text: 'Log Out',
           style: 'destructive',
-          onPress: () => signOut(),
+          onPress: async () => {
+            try {
+              console.log('[ProfileScreen] Calling signOut...');
+              await signOut();
+              console.log('[ProfileScreen] signOut completed');
+            } catch (error) {
+              console.error('[ProfileScreen] signOut error:', error);
+            }
+          },
         },
       ],
       { cancelable: true }

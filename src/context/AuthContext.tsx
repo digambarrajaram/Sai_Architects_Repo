@@ -2,13 +2,13 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '../services/supabaseClient';
 import { User, UserRole } from '../types';
-import { reset } from '../navigation/NavigationService';
+import { navigateToLogin } from '../navigation/NavigationService';
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  isAuthLoading: boolean; //专门用于登录过渡期的加载状态
+  isAuthLoading: boolean; 
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   updateUserProfile: (updates: Partial<User>) => Promise<void>;
@@ -101,21 +101,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       console.log('[AuthContext] Setting user to null');
       setUser(null);
-      console.log('[AuthContext] Calling reset navigation');
-      // Navigate to login screen after logout
-      reset({
-        index: 0,
-        routes: [{ name: 'Auth' }],
-      });
+      console.log('[AuthContext] Navigating to login');
+      // Navigate to login screen after logout using the dedicated function
+      navigateToLogin();
       console.log('[AuthContext] SignOut complete');
     } catch (error) {
       console.error('[AuthContext] Error signing out:', error);
       // Still navigate to login even if there's an error
       setUser(null);
-      reset({
-        index: 0,
-        routes: [{ name: 'Auth' }],
-      });
+      navigateToLogin();
       throw error;
     }
   };

@@ -720,46 +720,8 @@ const renderGridItem = useCallback(({ item }: { item: ExtendedBackendExpense }) 
             </Pressable>
           ) : null}
         </View>
-      </View>
+     
 
-      {/* Stats Cards */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.statsScroll}
-        contentContainerStyle={styles.statsContainer}
-      >
-        <View style={styles.statCard}>
-          <Text style={styles.statIcon}>💰</Text>
-          <Text style={styles.statLabel}>Total</Text>
-          <Text style={styles.statValue}>{formatCurrency(stats.totalAmount)}</Text>
-        </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statIcon}>📋</Text>
-          <Text style={styles.statLabel}>Count</Text>
-          <Text style={styles.statValue}>{stats.expenseCount}</Text>
-        </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statIcon}>📊</Text>
-          <Text style={styles.statLabel}>Average</Text>
-          <Text style={styles.statValue}>{formatCurrency(stats.averageAmount)}</Text>
-        </View>
-        <View style={[styles.statCard, styles.statPending]}>
-          <Text style={styles.statIcon}>⏳</Text>
-          <Text style={styles.statLabel}>Pending</Text>
-          <Text style={styles.statValue}>{stats.pendingCount}</Text>
-        </View>
-        <View style={[styles.statCard, styles.statApproved]}>
-          <Text style={styles.statIcon}>✅</Text>
-          <Text style={styles.statLabel}>Approved</Text>
-          <Text style={styles.statValue}>{stats.approvedCount}</Text>
-        </View>
-        <View style={[styles.statCard, styles.statRejected]}>
-          <Text style={styles.statIcon}>❌</Text>
-          <Text style={styles.statLabel}>Rejected</Text>
-          <Text style={styles.statValue}>{stats.rejectedCount}</Text>
-        </View>
-      </ScrollView>
 
       {/* Date Filter Selection */}
       <View style={styles.dateFilterSection}>
@@ -893,7 +855,6 @@ const renderGridItem = useCallback(({ item }: { item: ExtendedBackendExpense }) 
           </View>
         </Pressable>
       </Modal>
-
       {/* Category Selection Modal */}
       <Modal visible={showCategoryModal} transparent animationType="slide">
         <Pressable style={styles.modalOverlay} onPress={() => setShowCategoryModal(false)}>
@@ -1004,6 +965,7 @@ const renderGridItem = useCallback(({ item }: { item: ExtendedBackendExpense }) 
         </Pressable>
       </Modal>
     </View>
+  </View>
   );
 }
 

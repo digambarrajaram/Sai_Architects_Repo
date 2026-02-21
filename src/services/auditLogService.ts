@@ -17,7 +17,7 @@ const MOCK_AUDIT_LOGS: AuditLog[] = [
     userId: 'user-001',
     userName: 'John Owner',
     action: AuditAction.CREATE,
-    entityType: AuditEntityType.EXPENSE,
+    entity_type: AuditEntityType.EXPENSE,
     entityId: 'exp-001',
     details: 'Created expense: Steel reinforcement bars - 50 tons (₹150,000)',
     timestamp: '2024-06-15T10:30:00Z',
@@ -29,7 +29,7 @@ const MOCK_AUDIT_LOGS: AuditLog[] = [
     userId: 'user-002',
     userName: 'Mike Supervisor',
     action: AuditAction.CREATE,
-    entityType: AuditEntityType.EXPENSE,
+    entity_type: AuditEntityType.EXPENSE,
     entityId: 'exp-002',
     details: 'Created expense: Concrete mixer rental - 2 weeks (₹85,000)',
     timestamp: '2024-06-10T09:00:00Z',
@@ -41,7 +41,7 @@ const MOCK_AUDIT_LOGS: AuditLog[] = [
     userId: 'user-001',
     userName: 'John Owner',
     action: AuditAction.UPDATE,
-    entityType: AuditEntityType.PROJECT,
+    entity_type: AuditEntityType.PROJECT,
     entityId: 'proj-001',
     details: 'Updated project budget from ₹4,500,000 to ₹5,000,000',
     timestamp: '2024-06-08T14:00:00Z',
@@ -53,7 +53,7 @@ const MOCK_AUDIT_LOGS: AuditLog[] = [
     userId: 'user-001',
     userName: 'John Owner',
     action: AuditAction.EXPORT,
-    entityType: AuditEntityType.REPORT,
+    entity_type: AuditEntityType.REPORT,
     entityId: 'report-001',
     details: 'Exported monthly expense report as PDF',
     timestamp: '2024-06-05T16:30:00Z',
@@ -65,7 +65,7 @@ const MOCK_AUDIT_LOGS: AuditLog[] = [
     userId: 'user-002',
     userName: 'Mike Supervisor',
     action: AuditAction.VIEW,
-    entityType: AuditEntityType.PROJECT,
+    entity_type: AuditEntityType.PROJECT,
     entityId: 'proj-001',
     details: 'Viewed project details',
     timestamp: '2024-06-04T11:00:00Z',
@@ -77,7 +77,7 @@ const MOCK_AUDIT_LOGS: AuditLog[] = [
     userId: 'user-003',
     userName: 'Sarah Supervisor',
     action: AuditAction.CREATE,
-    entityType: AuditEntityType.EXPENSE,
+    entity_type: AuditEntityType.EXPENSE,
     entityId: 'exp-005',
     details: 'Created expense: Foundation excavation work (₹200,000)',
     timestamp: '2024-06-08T11:00:00Z',
@@ -89,7 +89,7 @@ const MOCK_AUDIT_LOGS: AuditLog[] = [
     userId: 'user-001',
     userName: 'John Owner',
     action: AuditAction.DELETE,
-    entityType: AuditEntityType.EXPENSE,
+    entity_type: AuditEntityType.EXPENSE,
     entityId: 'exp-deleted',
     details: 'Deleted expense: Duplicate entry (₹10,000)',
     timestamp: '2024-06-02T09:30:00Z',
@@ -101,7 +101,7 @@ const MOCK_AUDIT_LOGS: AuditLog[] = [
     userId: 'user-004',
     userName: 'David Supervisor',
     action: AuditAction.CREATE,
-    entityType: AuditEntityType.EXPENSE,
+    entity_type: AuditEntityType.EXPENSE,
     entityId: 'exp-008',
     details: 'Created expense: Tunnel boring machine rental (₹500,000)',
     timestamp: '2024-06-18T08:00:00Z',
@@ -130,7 +130,7 @@ export const auditLogService = {
       page?: number;
       pageSize?: number;
       action?: AuditAction;
-      entityType?: AuditEntityType;
+      entity_type?: AuditEntityType;
     }
   ): Promise<{ logs: AuditLog[]; total: number; hasMore: boolean }> {
     await simulateDelay(600);
@@ -143,8 +143,8 @@ export const auditLogService = {
     }
     
     // Filter by entity type if specified
-    if (options?.entityType) {
-      logs = logs.filter(log => log.entityType === options.entityType);
+    if (options?.entity_type) {
+      logs = logs.filter(log => log.entity_type === options.entity_type);
     }
     
     // Sort by timestamp descending

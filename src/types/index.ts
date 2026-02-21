@@ -163,7 +163,7 @@ export interface AuditLog {
   userId: string;
   userName: string;
   action: AuditAction;
-  entityType: AuditEntityType;
+  entity_type: AuditEntityType;
   entityId: string;
   details: string;
   timestamp: string;

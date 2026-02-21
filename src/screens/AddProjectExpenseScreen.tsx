@@ -195,7 +195,12 @@ export default function AddProjectExpenseScreen() {
 
   const handleSubmit = async () => {
     setValidationAttempted(true);
-    if (!amount || !category) {
+    if (!amount) {
+      Alert.alert('Validation Error', 'Please enter an amount');
+      return;
+    }
+    if (!category) {
+      Alert.alert('Validation Error', 'Please select a category');
       return;
     }
 
@@ -233,18 +238,28 @@ export default function AddProjectExpenseScreen() {
         );
       }
 
-      // Audit log
+      // Refresh the expense list
+      fetchExpenses();
+
+      // Audit log (non-blocking - won't fail expense creation if audit fails)
       if (user) {
-        await auditLogService.logAction({
-          projectId,
-          userId: user.id,
-          userName: user.name || 'Unknown',
-          action: 'CREATE' as any,
-          entityType: 'EXPENSE' as any,
-          entityId: createdExpense.id,
-          details: `Created expense: ${category} - ${notes || 'No description'} (₹${parsedAmount})`,
-          ipAddress: '192.168.1.100',
-        });
+        try {
+          await auditLogService.logAction({
+            projectId,
+            userId: user.id,
+            userName: user.name || 'Unknown',
+            action: 'CREATE' as any,
+            entity_type: 'EXPENSE' as any,
+            entityId: createdExpense.id,
+            details: `Created expense: ${category} - ${notes || 'No description'} (₹${parsedAmount})`,
+            ipAddress: '192.168.1.100',
+          });
+        } catch (auditError) {
+          // Log audit error but don't fail expense creation
+          if (__DEV__) {
+            console.warn('[AddProjectExpenseScreen] Audit log failed:', auditError);
+          }
+        }
       }
 
       // Navigate back to Project Details and signal a refresh
@@ -346,75 +361,7 @@ export default function AddProjectExpenseScreen() {
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            {/* ── Expense List Section with Filters ── */}
-            <View style={expenseListStyles.container}>
-              <Text style={expenseListStyles.sectionTitle}>Recent Expenses</Text>
-              
-              {/* Search */}
-              <View style={expenseListStyles.searchContainer}>
-                <View style={expenseListStyles.searchBox}>
-                  <Text style={expenseListStyles.searchIcon}>🔍</Text>
-                  <TextInput
-                    placeholder="Search expenses..."
-                    style={expenseListStyles.searchInput}
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                    testID="expense-search-input"
-                    returnKeyType="search"
-                    clearButtonMode="while-editing"
-                  />
-                  {searchQuery.length > 0 && (
-                    <Pressable onPress={clearSearch} style={expenseListStyles.clearButton}>
-                      <Text style={expenseListStyles.clearIcon}>✕</Text>
-                    </Pressable>
-                  )}
-                </View>
-              </View>
-
-              {/* Expense List */}
-              {loading && expenses.length === 0 ? (
-                <LoadingState message="Loading expenses..." />
-              ) : expenses.length === 0 ? (
-                <EmptyState
-                  icon="💰"
-                  title="No Expenses Found"
-                  message={searchQuery ? "Try a different search term" : "No expenses recorded for this project yet"}
-                  testID="empty-expenses"
-                />
-              ) : (
-                <FlatList
-                  data={expenses}
-                  keyExtractor={(item) => item.id}
-                  scrollEnabled={false}
-                  renderItem={({ item }) => (
-                    <View style={expenseListStyles.expenseItem}>
-                      <View style={expenseListStyles.expenseInfo}>
-                        <Text style={expenseListStyles.expenseCategory}>{item.category}</Text>
-                        <Text style={expenseListStyles.expenseTitle} numberOfLines={1}>
-                          {item.title || 'Untitled Expense'}
-                        </Text>
-                        <Text style={expenseListStyles.expenseDate}>
-                          {formatExpenseDate(item.expense_date)}
-                        </Text>
-                      </View>
-                      <Text style={expenseListStyles.expenseAmount}>
-                        {formatCurrency(item.amount)}
-                      </Text>
-                    </View>
-                  )}
-                  refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-                  }
-                />
-              )}
-            </View>
-
             <View style={styles.divider} />
-
-            {/* ── Add New Expense Form ── */}
-            <View style={{ padding: 16 }}>
-              <Text style={styles.sectionLabel}>Add New Expense</Text>
-            </View>
             {/* Amount */}
             <View style={styles.section}>
               <Text style={styles.sectionLabel}>Amount</Text>
@@ -530,21 +477,6 @@ export default function AddProjectExpenseScreen() {
                 </Pressable>
               </View>
               <ScrollView>
-                <View style={styles.searchBox}>
-                  <Text style={styles.searchIcon}>🔍</Text>
-                  <TextInput
-                    style={styles.searchInput}
-                    placeholder="Search categories..."
-                    placeholderTextColor="#94a3b8"
-                    value={categorySearch}
-                    onChangeText={setCategorySearch}
-                  />
-                  {categorySearch.length > 0 && (
-                    <Pressable onPress={() => setCategorySearch('')}>
-                      <Text style={styles.clearIcon}>✕</Text>
-                    </Pressable>
-                  )}
-                </View>
                 {CATEGORIES.filter(cat => 
                   cat.toLowerCase().includes(categorySearch.toLowerCase())
                 ).map((cat) => (

@@ -102,7 +102,7 @@ export default function AddProjectScreen() {
         userId: user?.id || 'unknown',
         userName: user?.name || 'Unknown User',
         action: AuditAction.CREATE,
-        entityType: AuditEntityType.PROJECT,
+        entity_type: AuditEntityType.PROJECT,
         entityId: createdProject.id,
         details: JSON.stringify({
           project_name: createdProject.name,

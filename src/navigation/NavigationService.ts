@@ -15,11 +15,18 @@ export function isNavigationReady(): boolean {
 
 export function navigate<T extends keyof RootStackParamList>(
   name: T,
-  params?: RootStackParamList[T]
+  params?: RootStackParamList[T],
+  retries = 3
 ): void {
-  if (isNavigationReady()) {
-    navigationRef.current?.navigate(name as any, params as any);
-  }
+  const attemptNavigate = (remainingRetries: number) => {
+    if (isNavigationReady()) {
+      navigationRef.current?.navigate(name as any, params as any);
+    } else if (remainingRetries > 0) {
+      // Retry after a short delay if navigation isn't ready
+      setTimeout(() => attemptNavigate(remainingRetries - 1), 100);
+    }
+  };
+  attemptNavigate(retries);
 }
 
 export function reset(state: any, retries = 3): void {
