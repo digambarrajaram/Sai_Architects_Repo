@@ -15,6 +15,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { projectService, ProjectServiceError } from '../services/projectService';
 import { auditLogService } from '../services/auditLogService';
 import { AuditAction, AuditEntityType } from '../types';
@@ -33,6 +34,7 @@ const STATUS_OPTIONS: { label: string; value: ProjectStatus }[] = [
 export default function AddProjectScreen() {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const { user } = useAuth();
+  const { showToast } = useToast();
 
   const [name, setName] = useState('');
   const [budget, setBudget] = useState('');
@@ -43,6 +45,7 @@ export default function AddProjectScreen() {
   const [status, setStatus] =
     useState<ProjectStatus>('planning');
   const [loading, setLoading] = useState(false);
+  const [nameError, setNameError] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [tempDate, setTempDate] = useState({
     year: new Date().getFullYear(),
@@ -51,8 +54,11 @@ export default function AddProjectScreen() {
   });
 
   const handleSubmit = async () => {
+    // Clear previous error
+    setNameError('');
+    
     if (!name.trim()) {
-      Alert.alert('Error', 'Please enter a project name');
+      setNameError('Please enter a project name');
       return;
     }
 
@@ -68,7 +74,7 @@ export default function AddProjectScreen() {
         (p) => p.name.toLowerCase() === name.trim().toLowerCase()
       );
       if (isDuplicate) {
-        Alert.alert('Error', 'A project with this name already exists.');
+        setNameError('A project with this name already exists.');
         return;
       }
     } catch (err) {
@@ -106,13 +112,9 @@ export default function AddProjectScreen() {
       });
 
       navigation.goBack();
-
-      setTimeout(() => {
-        Alert.alert(
-          'Success',
-          `Project "${createdProject.name}" created successfully`
-        );
-      }, 100);
+      
+      // Show success toast
+      showToast(`Project "${createdProject.name}" created successfully!`, 'success');
     } catch (err) {
       const errorMessage =
         err instanceof ProjectServiceError
@@ -164,12 +166,18 @@ export default function AddProjectScreen() {
               Project Name <Text style={styles.required}>*</Text>
             </Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, nameError ? styles.inputError : null]}
               placeholder="Enter project name"
               placeholderTextColor="#94a3b8"
               value={name}
-              onChangeText={setName}
+              onChangeText={(text) => {
+                setName(text);
+                setNameError(''); // Clear error when user types
+              }}
             />
+            {nameError ? (
+              <Text style={styles.errorText}>{nameError}</Text>
+            ) : null}
           </View>
 
           {/* Budget */}

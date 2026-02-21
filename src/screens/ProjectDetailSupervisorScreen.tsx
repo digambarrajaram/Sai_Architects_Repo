@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -165,11 +165,16 @@ export default function ProjectDetailSupervisorScreen() {
   );
 
   // ── Auto-refresh on screen focus (also triggered after AddExpense navigate back) ──
-  // FIX: Combined into single useFocusEffect and properly handled refresh param
+  // FIX: Only fetch on first focus to prevent infinite loop
+  const hasFetchedInitial = useRef(false);
+  
   useFocusEffect(
     useCallback(() => {
-      // Always load data on focus
-      loadAll();
+      // Only load on first focus, not every time
+      if (!hasFetchedInitial.current) {
+        hasFetchedInitial.current = true;
+        loadAll();
+      }
       
       // Check and clear refresh param after load
       if (route.params?.refresh) {

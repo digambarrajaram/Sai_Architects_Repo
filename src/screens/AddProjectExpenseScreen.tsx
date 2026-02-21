@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   View,
   Text,
   ScrollView,
+  FlatList,
   TextInput,
   Pressable,
   StyleSheet,
@@ -11,19 +12,40 @@ import {
   SafeAreaView,
   KeyboardAvoidingView,
   Platform,
+  RefreshControl,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import {
   expenseService,
   ExpenseServiceError,
   BackendExpenseCategory,
+  BackendExpense,
 } from '../services/expenseService';
 import { auditLogService } from '../services/auditLogService';
+import { LoadingState } from '../components/common/LoadingState';
+import { EmptyState } from '../components/common/EmptyState';
 import { styles } from './styles/add-expense.styles';
 const CATEGORIES: BackendExpenseCategory[] = [
+  'Materials',
+  'Labor',
+  'Machinery',
+  'Transport',
+  'Survey Equipment',
+  'Permits',
+  'Utilities',
+  'Subcontractor',
+  'Miscellaneous',
+];
+
+// Filter type for expenses (similar to ProjectListScreen)
+type CategoryFilterOption = 'All' | BackendExpenseCategory;
+
+const CATEGORY_FILTER_OPTIONS: CategoryFilterOption[] = [
+  'All',
   'Materials',
   'Labor',
   'Machinery',
@@ -45,6 +67,15 @@ export default function AddProjectExpenseScreen() {
   const route = useRoute<RouteProp<RootStackParamList, 'AddExpense'>>();
   const { projectId } = route.params;
   const { user } = useAuth();
+  const { showToast } = useToast();
+
+  // Expense list state
+  const [expenses, setExpenses] = useState<BackendExpense[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterCategory, setFilterCategory] = useState<CategoryFilterOption>('All');
+  const isMounted = useRef(true);
 
   // Form state
   const [amount, setAmount] = useState('');
@@ -66,6 +97,67 @@ export default function AddProjectExpenseScreen() {
   const [tempDay, setTempDay] = useState(new Date().getDate());
   const [tempMonth, setTempMonth] = useState(new Date().getMonth());
   const [tempYear, setTempYear] = useState(new Date().getFullYear());
+
+  // Fetch expenses
+  const fetchExpenses = useCallback(async (isRefresh = false) => {
+    if (!isMounted.current) return;
+
+    try {
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+
+      const filters: { categories?: BackendExpenseCategory[]; searchQuery?: string } = {};
+      
+      if (filterCategory !== 'All') {
+        filters.categories = [filterCategory];
+      }
+      
+      if (searchQuery.trim()) {
+        filters.searchQuery = searchQuery.trim();
+      }
+
+      const data = await expenseService.getExpensesByProject(projectId, filters);
+      
+      if (isMounted.current) {
+        setExpenses(data);
+      }
+    } catch (err) {
+      if (__DEV__) {
+        console.error('[AddProjectExpenseScreen] Failed to fetch expenses:', err);
+      }
+    } finally {
+      if (isMounted.current) {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    }
+  }, [projectId, filterCategory, searchQuery]);
+
+  // Initial fetch and refetch when filters change
+  const hasFetched = useRef(false);
+
+  useEffect(() => {
+    isMounted.current = true;
+    
+    if (!hasFetched.current) {
+      hasFetched.current = true;
+      fetchExpenses();
+    }
+    
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
+  // Re-fetch when filters change (after initial mount)
+  useEffect(() => {
+    if (hasFetched.current) {
+      fetchExpenses();
+    }
+  }, [filterCategory, searchQuery]);
 
   // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -156,6 +248,7 @@ export default function AddProjectExpenseScreen() {
       }
 
       // Navigate back to Project Details and signal a refresh
+      showToast('Expense saved successfully!', 'success');
       navigation.goBack();
     } catch (error) {
       const errorMessage =
@@ -192,6 +285,35 @@ export default function AddProjectExpenseScreen() {
     }, [navigation])
   );
 
+  // Format currency
+  const formatCurrency = useCallback((amount: number = 0) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 0,
+    }).format(amount || 0);
+  }, []);
+
+  // Format date for display
+  const formatExpenseDate = useCallback((dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  }, []);
+
+  // Clear search
+  const clearSearch = useCallback(() => {
+    setSearchQuery('');
+  }, []);
+
+  // Handle refresh
+  const handleRefresh = useCallback(() => {
+    fetchExpenses(true);
+  }, [fetchExpenses]);
+
   // ─── Render ──────────────────────────────────────────────────────────────────
 
   return (
@@ -220,10 +342,79 @@ export default function AddProjectExpenseScreen() {
         {/* Scrollable Body */}
         <View style={{ flex: 1 }}>
           <ScrollView
-            contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
+            contentContainerStyle={{ paddingBottom: 120 }}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
+            {/* ── Expense List Section with Filters ── */}
+            <View style={expenseListStyles.container}>
+              <Text style={expenseListStyles.sectionTitle}>Recent Expenses</Text>
+              
+              {/* Search */}
+              <View style={expenseListStyles.searchContainer}>
+                <View style={expenseListStyles.searchBox}>
+                  <Text style={expenseListStyles.searchIcon}>🔍</Text>
+                  <TextInput
+                    placeholder="Search expenses..."
+                    style={expenseListStyles.searchInput}
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    testID="expense-search-input"
+                    returnKeyType="search"
+                    clearButtonMode="while-editing"
+                  />
+                  {searchQuery.length > 0 && (
+                    <Pressable onPress={clearSearch} style={expenseListStyles.clearButton}>
+                      <Text style={expenseListStyles.clearIcon}>✕</Text>
+                    </Pressable>
+                  )}
+                </View>
+              </View>
+
+              {/* Expense List */}
+              {loading && expenses.length === 0 ? (
+                <LoadingState message="Loading expenses..." />
+              ) : expenses.length === 0 ? (
+                <EmptyState
+                  icon="💰"
+                  title="No Expenses Found"
+                  message={searchQuery ? "Try a different search term" : "No expenses recorded for this project yet"}
+                  testID="empty-expenses"
+                />
+              ) : (
+                <FlatList
+                  data={expenses}
+                  keyExtractor={(item) => item.id}
+                  scrollEnabled={false}
+                  renderItem={({ item }) => (
+                    <View style={expenseListStyles.expenseItem}>
+                      <View style={expenseListStyles.expenseInfo}>
+                        <Text style={expenseListStyles.expenseCategory}>{item.category}</Text>
+                        <Text style={expenseListStyles.expenseTitle} numberOfLines={1}>
+                          {item.title || 'Untitled Expense'}
+                        </Text>
+                        <Text style={expenseListStyles.expenseDate}>
+                          {formatExpenseDate(item.expense_date)}
+                        </Text>
+                      </View>
+                      <Text style={expenseListStyles.expenseAmount}>
+                        {formatCurrency(item.amount)}
+                      </Text>
+                    </View>
+                  )}
+                  refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+                  }
+                />
+              )}
+            </View>
+
+            <View style={styles.divider} />
+
+            {/* ── Add New Expense Form ── */}
+            <View style={{ padding: 16 }}>
+              <Text style={styles.sectionLabel}>Add New Expense</Text>
+            </View>
             {/* Amount */}
             <View style={styles.section}>
               <Text style={styles.sectionLabel}>Amount</Text>
@@ -574,5 +765,114 @@ const datePickerStyles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '600',
+  },
+});
+
+// ─── Expense List Styles ─────────────────────────────────────────────────
+
+const expenseListStyles = StyleSheet.create({
+  container: {
+    backgroundColor: '#ffffff',
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1e293b',
+    marginBottom: 12,
+  },
+  searchContainer: {
+    marginBottom: 12,
+  },
+  searchBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f1f5f9',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    height: 44,
+  },
+  searchIcon: {
+    fontSize: 16,
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: '#1e293b',
+  },
+  clearButton: {
+    padding: 4,
+  },
+  clearIcon: {
+    fontSize: 14,
+    color: '#94a3b8',
+  },
+  filterRow: {
+    marginBottom: 12,
+  },
+  filterRowContent: {
+    paddingRight: 16,
+  },
+  filterChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#f1f5f9',
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  filterChipActive: {
+    backgroundColor: '#3b82f6',
+    borderColor: '#3b82f6',
+  },
+  filterChipText: {
+    fontSize: 13,
+    color: '#64748b',
+    fontWeight: '500',
+  },
+  filterChipTextActive: {
+    color: '#ffffff',
+  },
+  expenseItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  expenseInfo: {
+    flex: 1,
+    marginRight: 12,
+  },
+  expenseCategory: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#3b82f6',
+    marginBottom: 2,
+  },
+  expenseTitle: {
+    fontSize: 15,
+    color: '#1e293b',
+    marginBottom: 2,
+  },
+  expenseDate: {
+    fontSize: 12,
+    color: '#94a3b8',
+  },
+  expenseAmount: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1e293b',
   },
 });

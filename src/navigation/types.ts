@@ -49,9 +49,9 @@ export type RootStackParamList = {
   };
 
   /* Owner-only */
-  ProjectDashboard: { projectId: string };
-  ProjectAuditLogs: { projectId: string };
-  ProjectReports: { projectId: string };
+  ProjectDashboard: { projectId?: string };
+  ProjectAuditLogs: { projectId?: string };
+  ProjectReports: { projectId?: string };
   UserManagement: undefined;
 };
 

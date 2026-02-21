@@ -2,11 +2,13 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '../services/supabaseClient';
 import { User, UserRole } from '../types';
+import { reset } from '../navigation/NavigationService';
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isAuthLoading: boolean; //专门用于登录过渡期的加载状态
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   updateUserProfile: (updates: Partial<User>) => Promise<void>;
@@ -17,6 +19,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthLoading, setIsAuthLoading] = useState(false); // 登录过渡期加载状态
 
   useEffect(() => {
     // Check active session
@@ -64,10 +67,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('Error fetching user profile:', error);
     } finally {
       setIsLoading(false);
+      setIsAuthLoading(false); // 登录完成
     }
   };
 
   const signIn = async (email: string, password: string) => {
+    setIsAuthLoading(true); // 开始登录过渡
     setIsLoading(true);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -82,16 +87,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       setIsLoading(false);
+      setIsAuthLoading(false); // 登录失败
       throw error;
     }
   };
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
+      console.log('[AuthContext] Signing out...');
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('[AuthContext] SignOut error:', error);
+      }
+      console.log('[AuthContext] Setting user to null');
       setUser(null);
+      console.log('[AuthContext] Calling reset navigation');
+      // Navigate to login screen after logout
+      reset({
+        index: 0,
+        routes: [{ name: 'Auth' }],
+      });
+      console.log('[AuthContext] SignOut complete');
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error('[AuthContext] Error signing out:', error);
+      // Still navigate to login even if there's an error
+      setUser(null);
+      reset({
+        index: 0,
+        routes: [{ name: 'Auth' }],
+      });
       throw error;
     }
   };
@@ -123,6 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         isLoading,
         isAuthenticated: !!user,
+        isAuthLoading,
         signIn,
         signOut,
         updateUserProfile,

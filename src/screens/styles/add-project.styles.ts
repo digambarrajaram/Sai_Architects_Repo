@@ -67,6 +67,14 @@ export const styles = StyleSheet.create({
     fontSize: typography.sizes.md,
     color: colors.textPrimary,
   },
+  inputError: {
+    borderColor: colors.error,
+  },
+  errorText: {
+    color: colors.error,
+    fontSize: typography.sizes.sm,
+    marginTop: spacing.xs,
+  },
   textArea: {
     height: 100,
     paddingTop: spacing.md,

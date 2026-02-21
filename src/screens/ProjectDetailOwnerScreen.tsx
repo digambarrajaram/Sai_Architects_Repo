@@ -111,6 +111,7 @@ const CATEGORIES: BackendExpenseCategory[] = [
 ];
 
 const DATE_FILTER_OPTIONS: { value: DateFilterType; label: string }[] = [
+  { value: 'all', label: 'Total' },
   { value: 'today', label: 'Today' },
   { value: 'week', label: 'This Week' },
   { value: 'month', label: 'This Month' },
@@ -339,10 +340,16 @@ const debouncedFetch = useCallback(() => {
 // The useEffect was causing issues due to missing debouncedFetch in dependencies
 // and was redundant with the useFocusEffect below
 
-// Focus effect - fetch data when screen comes into focus
+// Focus effect - fetch data only on first focus to prevent infinite loop
+const hasFetchedData = useRef(false);
+
 useFocusEffect(
   useCallback(() => {
-    fetchData();
+    // Only fetch on first focus, not on every focus
+    if (!hasFetchedData.current) {
+      hasFetchedData.current = true;
+      fetchData();
+    }
     
     return () => {
       // Cleanup: clear any pending timeouts when unmounting or refocusing
@@ -396,7 +403,7 @@ useEffect(() => {
   const activeFilterChips = useMemo((): FilterChip[] => {
     const chips: FilterChip[] = [];
 
-    if (filters.dateRange !== 'all' && filters.dateRange !== 'custom') {
+    if (filters.dateRange !== 'month' && filters.dateRange !== 'custom' && filters.dateRange !== 'all') {
       const option = DATE_FILTER_OPTIONS.find(opt => opt.value === filters.dateRange);
       if (option) {
         chips.push({
@@ -415,7 +422,7 @@ useEffect(() => {
           ...prev, 
           customStartDate: null, 
           customEndDate: null,
-          dateRange: 'all' 
+          dateRange: 'month' 
         })),
       });
     }
@@ -476,7 +483,7 @@ useEffect(() => {
   const clearAllFilters = useCallback(() => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setFilters({
-      dateRange: 'all',
+      dateRange: 'month',
       customStartDate: null,
       customEndDate: null,
       categories: [],
@@ -684,30 +691,6 @@ const renderGridItem = useCallback(({ item }: { item: ExtendedBackendExpense }) 
         <Text style={styles.headerTitle} numberOfLines={1}>
           {project?.name ? `${project.name} — Expenses` : 'Project Details'}
         </Text>
-
-        <View style={styles.headerActions}>
-          <Pressable
-            style={styles.iconBtn}
-            onPress={() => setShowFilters(!showFilters)}
-          >
-            <Text style={[styles.headerIcon, showFilters && styles.activeFilterIcon]}>
-              ⚙️
-            </Text>
-            {activeFilterChips.length > 0 && (
-              <View style={styles.filterBadge}>
-                <Text style={styles.filterBadgeText}>{activeFilterChips.length}</Text>
-              </View>
-            )}
-          </Pressable>
-          <Pressable
-            style={styles.iconBtn}
-            onPress={toggleViewMode}
-          >
-            <Text style={styles.headerIcon}>
-              {filters.viewMode === 'list' ? '📱' : '📲'}
-            </Text>
-          </Pressable>
-        </View>
       </View>
 
       {/* Search Bar */}
@@ -778,6 +761,33 @@ const renderGridItem = useCallback(({ item }: { item: ExtendedBackendExpense }) 
         </View>
       </ScrollView>
 
+      {/* Date Filter Selection */}
+      <View style={styles.dateFilterSection}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.dateFilterContent}
+        >
+          {DATE_FILTER_OPTIONS.map((option) => (
+            <Pressable
+              key={option.value}
+              style={[
+                styles.filterChip,
+                filters.dateRange === option.value && styles.filterChipActive
+              ]}
+              onPress={() => setFilters(prev => ({ ...prev, dateRange: option.value }))}
+            >
+              <Text style={[
+                styles.filterChipText,
+                filters.dateRange === option.value && styles.filterChipTextActive
+              ]}>
+                {option.label}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      </View>
+
       {/* Filter Chips */}
       {activeFilterChips.length > 0 && (
         <View style={styles.chipSection}>
@@ -804,147 +814,6 @@ const renderGridItem = useCallback(({ item }: { item: ExtendedBackendExpense }) 
           </ScrollView>
         </View>
       )}
-
-      {/* Filters Panel */}
-      {showFilters && (
-        <View style={styles.filtersPanel}>
-          {/* Header */}
-          <View style={styles.filterPanelHeader}>
-            <Text style={styles.filterPanelTitle}>Filters</Text>
-            <Pressable onPress={() => setShowFilters(false)}>
-              <Text style={styles.filterPanelClose}>✕</Text>
-            </Pressable>
-          </View>
-          <ScrollView 
-            showsVerticalScrollIndicator={false} 
-            contentContainerStyle={styles.filterScrollContent}
-          >
-            {/* Date Range */}
-            <Text style={styles.filterSectionTitle}>Date Range</Text>
-            <View style={styles.filterOptions}>
-              {DATE_FILTER_OPTIONS.map(option => (
-                <Pressable
-                  key={option.value}
-                  style={[
-                    styles.filterChip,
-                    filters.dateRange === option.value && styles.filterChipSelected,
-                  ]}
-                  onPress={() => {
-                    if (option.value === 'custom') {
-                      setShowDatePickerModal(true);
-                    } else {
-                      setFilters((prev: FilterState) => ({ ...prev, dateRange: option.value }));
-                    }
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.filterChipText,
-                      filters.dateRange === option.value && styles.filterChipTextSelected,
-                    ]}
-                  >
-                    {option.label}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-
-            {/* Categories */}
-            <View style={styles.filterRow}>
-              <Text style={styles.filterSectionTitle}>Categories</Text>
-              <Pressable onPress={() => setShowCategoryModal(true)}>
-                <Text style={styles.editLink}>
-                  {filters.categories.length > 0 ? 'Edit' : 'Select'}
-                </Text>
-              </Pressable>
-            </View>
-            {filters.categories.length > 0 ? (
-              <View style={styles.filterOptions}>
-                {filters.categories.map(cat => (
-                  <View key={cat} style={styles.selectedCategory}>
-                    <Text style={styles.selectedCategoryText}>{cat}</Text>
-                    <Pressable
-                      onPress={() => setFilters((prev: FilterState) => ({
-                        ...prev,
-                        categories: prev.categories.filter(c => c !== cat),
-                      }))}
-                    >
-                      <Text style={styles.removeIcon}>✕</Text>
-                    </Pressable>
-                  </View>
-                ))}
-              </View>
-            ) : (
-              <Text style={styles.placeholderText}>All categories</Text>
-            )}
-
-            {/* Amount Range */}
-            <Text style={styles.filterSectionTitle}>Amount Range (₹)</Text>
-            <View style={styles.amountRange}>
-              <TextInput
-                style={styles.amountInput}
-                placeholder="Min"
-                keyboardType="numeric"
-                value={filters.minAmount}
-                onChangeText={(text: string) => setFilters((prev: FilterState) => ({ ...prev, minAmount: text }))}
-              />
-              <Text style={styles.amountSeparator}>-</Text>
-              <TextInput
-                style={styles.amountInput}
-                placeholder="Max"
-                keyboardType="numeric"
-                value={filters.maxAmount}
-                onChangeText={(text: string) => setFilters((prev: FilterState) => ({ ...prev, maxAmount: text }))}
-              />
-            </View>
-
-            {/* Status */}
-            <Text style={styles.filterSectionTitle}>Status</Text>
-            <View style={styles.filterOptions}>
-              {STATUS_OPTIONS.map(option => (
-                <Pressable
-                  key={option.value}
-                  style={[
-                    styles.filterChip,
-                    filters.status === option.value && styles.filterChipSelected,
-                  ]}
-                  onPress={() => setFilters((prev: FilterState) => ({ ...prev, status: option.value }))}
-                >
-                  <Text
-                    style={[
-                      styles.filterChipText,
-                      filters.status === option.value && styles.filterChipTextSelected,
-                    ]}
-                  >
-                    {option.label}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-
-            {/* Sort Options */}
-            <Text style={styles.filterSectionTitle}>Sort By</Text>
-            <Pressable style={styles.sortSelector} onPress={() => setShowSortModal(true)}>
-              <Text style={styles.sortSelectorText}>
-                {SORT_OPTIONS.find(opt => opt.value === filters.sortBy)?.label}
-              </Text>
-              <Text style={styles.chevron}>⌄</Text>
-            </Pressable>
-
-            {/* Apply Button */}
-            <Pressable style={styles.applyButton} onPress={() => setShowFilters(false)}>
-              <Text style={styles.applyButtonText}>Apply Filters</Text>
-            </Pressable>
-          </ScrollView>
-          {/* Sticky Footer */}
-          <View style={styles.filterPanelFooter}>
-            <Pressable style={styles.applyButton} onPress={() => setShowFilters(false)}>
-              <Text style={styles.applyButtonText}>Apply Filters</Text>
-            </Pressable>
-          </View>
-        </View>
-      )}
-
       {/* Main Content */}
       <View style={{ flexGrow: 1, flexShrink: 1 }}>
         {sortedExpenses.length === 0 ? (
@@ -961,7 +830,7 @@ const renderGridItem = useCallback(({ item }: { item: ExtendedBackendExpense }) 
             renderItem={filters.viewMode === 'list' ? renderExpenseItem : renderGridItem}
             keyExtractor={(item) => item.id.toString()}
             numColumns={filters.viewMode === 'grid' ? 2 : 1}
-            key={filters.viewMode} // Force re-render when view mode changes
+            key={filters.viewMode === 'grid' ? 'grid' : 'list'} // Only change key when view mode changes
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={() => fetchData(true)} />
             }
@@ -973,7 +842,7 @@ const renderGridItem = useCallback(({ item }: { item: ExtendedBackendExpense }) 
                 </Text>
               </View>
             }
-            ListFooterComponent={<View style={{ height: 100 }} />}
+            ListFooterComponent={<View style={{ height: 20 }} />}
           />
         )}
       </View>

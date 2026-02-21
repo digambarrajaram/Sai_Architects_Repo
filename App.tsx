@@ -6,6 +6,7 @@ import { Session } from '@supabase/supabase-js';
 
 import AppNavigator from './src/navigation/AppNavigator';
 import { AuthProvider } from './src/context/AuthContext';
+import { ToastProvider } from './src/context/ToastContext';
 import { supabase } from './src/services/supabaseClient';
 
 enableScreens();
@@ -51,10 +52,12 @@ export default function App() {
 
   return (
     <SafeAreaProvider style={{ flex: 1 }}>
-      <AuthProvider>
-        <StatusBar barStyle="light-content" />
-        <AppNavigator />
-      </AuthProvider>
+      <ToastProvider>
+        <AuthProvider>
+          <StatusBar barStyle="light-content" />
+          <AppNavigator />
+        </AuthProvider>
+      </ToastProvider>
     </SafeAreaProvider>
   );
 }

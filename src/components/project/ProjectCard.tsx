@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
     gap: 4,
   } as ViewStyle,
   warningContainer: {
-    marginRight: 2,
+    marginRight: 4,
   } as ViewStyle,
   warningIcon: {
     fontSize: 14,

@@ -104,18 +104,22 @@ export const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     gap: spacing.xs,
     alignItems: 'flex-start',
+    minHeight: 88,
   },
   statCard: {
     backgroundColor: colors.backgroundLight,
     borderRadius: 12,
-    padding: spacing.sm,
-    minWidth: 100,
+    padding: 12,
+    minWidth: 90,
+    width: 100,
+    height: 88,
     maxHeight: 96,
     minHeight: 72,
+    overflow: 'hidden',
     borderWidth: 1,
     borderColor: colors.border,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
   },
   statIcon: {
     fontSize: 20,
@@ -202,7 +206,7 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.backgroundLight,
     borderBottomWidth: 1,
     borderColor: colors.border,
-    maxHeight: 400,
+    maxHeight: 350,
   },
   filterPanelHeader: {
     flexDirection: 'row',
@@ -254,6 +258,15 @@ export const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: spacing.xs,
   },
+  dateFilterSection: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.background,
+  },
+  dateFilterContent: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
   filterChip: {
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
@@ -262,7 +275,7 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  filterChipSelected: {
+  filterChipActive: {
     backgroundColor: colors.primary,
     borderColor: colors.primary,
   },
@@ -270,7 +283,7 @@ export const styles = StyleSheet.create({
     fontSize: typography.sizes.sm,
     color: colors.textSecondary,
   },
-  filterChipTextSelected: {
+  filterChipTextActive: {
     color: colors.white,
     fontWeight: '500',
   },
@@ -397,6 +410,13 @@ export const styles = StyleSheet.create({
     flex: 1,
     marginRight: spacing.xs,
   },
+  expenseTitleText: {
+    fontSize: typography.sizes.md,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    flex: 1,
+    marginRight: spacing.xs,
+  },
   expenseAmount: {
     fontSize: typography.sizes.md,
     fontWeight: '700',
@@ -412,6 +432,12 @@ export const styles = StyleSheet.create({
     color: colors.textSecondary,
     flex: 1,
     maxWidth: '60%',
+  },
+  expenseMetaText: {
+    fontSize: typography.sizes.sm,
+    color: colors.textSecondary,
+    flex: 1,
+    maxWidth: '55%',
   },
   statusPill: {
     paddingHorizontal: spacing.sm,
@@ -640,13 +666,6 @@ export const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     gap: spacing.xs,
-  },
-  filterChipActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  filterChipTextActive: {
-    color: colors.white,
   },
   scrollContent: {
     paddingBottom: 100,

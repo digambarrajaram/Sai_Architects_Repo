@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -8,12 +8,25 @@ import {
   Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { useAuth } from '../context/AuthContext';
+import { RootStackParamList } from '../navigation/types';
+import { LoadingState } from '../components/common/LoadingState';
 
 export default function ProfileScreen() {
-  const navigation = useNavigation();
-  const { user, signOut } = useAuth();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const { user, signOut, isLoading } = useAuth();
   const role = user?.role;
+
+  // Generate initials from user's name
+  const userInitials = useMemo(() => {
+    if (!user?.name) return '??';
+    const names = user.name.trim().split(' ');
+    if (names.length >= 2) {
+      return (names[0][0] + names[names.length - 1][0]).toUpperCase();
+    }
+    return names[0].substring(0, 2).toUpperCase();
+  }, [user?.name]);
 
   // Handle logout with confirmation
   const handleLogout = () => {
@@ -34,6 +47,11 @@ export default function ProfileScreen() {
       { cancelable: true }
     );
   };
+
+  // Show loading state while user data is being fetched
+  if (isLoading) {
+    return <LoadingState message="Loading profile..." />;
+  }
 
   return (
     <View style={styles.root}>
@@ -70,7 +88,7 @@ export default function ProfileScreen() {
           <View style={styles.profile}>
             <View style={styles.avatarWrapper}>
               <View style={styles.avatar}>
-                <Text style={styles.avatarText}>JC</Text>
+                <Text style={styles.avatarText}>{userInitials}</Text>
                 <Pressable style={styles.cameraBtn}>
                   <Text style={styles.cameraIcon}>📷</Text>
                 </Pressable>
@@ -80,9 +98,9 @@ export default function ProfileScreen() {
               </View>
             </View>
 
-            <Text style={styles.name}>James Carter</Text>
-            <Text style={styles.phone}>+1 (555) 123-4567</Text>
-            <Text style={styles.email}>owner@gmail.com</Text>
+            <Text style={styles.name}>{user?.name || 'User Name'}</Text>
+            <Text style={styles.phone}>Phone not available</Text>
+            <Text style={styles.email}>{user?.email || 'Email not available'}</Text>
 
             <View style={styles.roleBadge}>
               <Text style={styles.roleText}>{role}</Text>
@@ -92,6 +110,27 @@ export default function ProfileScreen() {
           {/* Account Section */}
           <View style={styles.card}>
             <Text style={styles.cardHeader}>Account</Text>
+
+            {role === 'OWNER' && (
+              <>
+                <Pressable 
+                  style={styles.rowItem}
+                  onPress={() => navigation.navigate('ProjectDashboard', { projectId: undefined })}
+                >
+                  <View style={[styles.rowIcon, styles.indigoBg]}>
+                    <Text style={styles.rowIconText}>📊</Text>
+                  </View>
+                  <View style={styles.rowContent}>
+                    <Text style={styles.rowTitle}>Financial Dashboard</Text>
+                    <Text style={styles.rowSub}>
+                      View financial overview and metrics
+                    </Text>
+                  </View>
+                  <Text style={styles.chevron}>›</Text>
+                </Pressable>
+                <View style={styles.divider} />
+              </>
+            )}
 
             <View style={styles.rowItem}>
               <View style={[styles.rowIcon, styles.blueBg]}>
@@ -115,55 +154,13 @@ export default function ProfileScreen() {
               <View style={styles.rowContent}>
                 <Text style={styles.rowTitle}>Security</Text>
                 <Text style={styles.rowSub}>
-                  Password, 2FA, and sessions
+                  Password
                 </Text>
               </View>
               <Text style={styles.chevron}>›</Text>
             </View>
 
             <View style={styles.divider} />
-
-            <View style={styles.rowItem}>
-              <View style={[styles.rowIcon, styles.purpleBg]}>
-                <Text style={styles.rowIconText}>🌐</Text>
-              </View>
-              <View style={styles.rowContent}>
-                <Text style={styles.rowTitle}>Language & Region</Text>
-                <Text style={styles.rowSub}>English (IN) • INR (₹)</Text>
-              </View>
-              <Text style={styles.chevron}>›</Text>
-            </View>
-          </View>
-
-          {/* Support Section */}
-          <View style={styles.card}>
-            <Text style={styles.cardHeader}>Support</Text>
-
-            <View style={styles.rowItem}>
-              <View style={[styles.rowIcon, styles.amberBg]}>
-                <Text style={styles.rowIconText}>❓</Text>
-              </View>
-              <View style={styles.rowContent}>
-                <Text style={styles.rowTitle}>Help Center</Text>
-                <Text style={styles.rowSub}>
-                  FAQ and customer support
-                </Text>
-              </View>
-              <Text style={styles.chevron}>›</Text>
-            </View>
-
-            <View style={styles.divider} />
-
-            <View style={styles.rowItem}>
-              <View style={[styles.rowIcon, styles.slateBg]}>
-                <Text style={styles.rowIconText}>📋</Text>
-              </View>
-              <View style={styles.rowContent}>
-                <Text style={styles.rowTitle}>Terms & Policy</Text>
-                <Text style={styles.rowSub}>Legal information</Text>
-              </View>
-              <Text style={styles.chevron}>↗</Text>
-            </View>
           </View>
 
           {/* Logout */}
@@ -182,30 +179,6 @@ export default function ProfileScreen() {
 
           <View style={{ height: 80 }} />
         </ScrollView>
-      </View>
-
-      {/* Bottom Navigation */}
-      <View style={styles.bottomNav}>
-        {['Projects', 'Expenses', 'Reports', 'Settings'].map((label, i) => (
-          <View key={label} style={styles.navItem}>
-            <Text
-              style={[
-                styles.navIcon,
-                i === 3 && styles.navIconActive,
-              ]}
-            >
-              ●
-            </Text>
-            <Text
-              style={[
-                styles.navLabel,
-                i === 3 && styles.navLabelActive,
-              ]}
-            >
-              {label}
-            </Text>
-          </View>
-        ))}
       </View>
     </View>
   );
@@ -365,6 +338,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
+    justifyContent: 'space-between',
   },
   rowIcon: {
     width: 40,
@@ -379,6 +353,7 @@ const styles = StyleSheet.create({
   rowContent: {
     flex: 1,
     marginLeft: 12,
+    marginRight: 8,
   },
   rowTitle: {
     fontSize: 14,
@@ -405,6 +380,7 @@ const styles = StyleSheet.create({
   amberBg: { backgroundColor: '#fef3c7' },
   grayBg: { backgroundColor: '#e5e7eb' },
   slateBg: { backgroundColor: '#cbd5e1' },
+  indigoBg: { backgroundColor: '#e0e7ff' },
 
   logoutBtn: {
     flexDirection: 'row',
@@ -446,9 +422,10 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 8,
   },
   navIcon: {
-    fontSize: 10,
+    fontSize: 20,
     color: '#94a3b8',
   },
   navIconActive: {
@@ -457,6 +434,7 @@ const styles = StyleSheet.create({
   navLabel: {
     fontSize: 10,
     color: '#94a3b8',
+    marginTop: 4,
   },
   navLabelActive: {
     color: '#136dec',

@@ -22,10 +22,16 @@ export function navigate<T extends keyof RootStackParamList>(
   }
 }
 
-export function reset(state: any): void {
-  if (isNavigationReady()) {
-    navigationRef.current?.dispatch(CommonActions.reset(state));
-  }
+export function reset(state: any, retries = 3): void {
+  const attemptReset = (remainingRetries: number) => {
+    if (isNavigationReady()) {
+      navigationRef.current?.dispatch(CommonActions.reset(state));
+    } else if (remainingRetries > 0) {
+      // Retry after a short delay if navigation isn't ready
+      setTimeout(() => attemptReset(remainingRetries - 1), 100);
+    }
+  };
+  attemptReset(retries);
 }
 
 export function navigateToLogin(): void {

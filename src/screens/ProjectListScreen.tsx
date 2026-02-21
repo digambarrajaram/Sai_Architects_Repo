@@ -153,11 +153,22 @@ export default function ProjectListScreen() {
     }
   }, [user?.id, filterStatus, searchQuery]);
 
-  // Set up mounted ref and focus effect
+  const isInitialMount = useRef(true);
+  
+  // Handle filter/search change - refetch projects when filter or search changes
+  // This enables real-time filtering without leaving the screen
+  useEffect(() => {
+    // Skip first run since useFocusEffect will handle initial fetch
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    fetchProjects();
+  }, [fetchProjects, filterStatus, searchQuery]);
+
+  // Fetch projects when screen comes into focus (e.g., after creating a new project)
   useFocusEffect(
     useCallback(() => {
-      isMounted.current = true;
-      
       fetchProjects();
       
       return () => {
@@ -282,6 +293,7 @@ export default function ProjectListScreen() {
       </View>
 
       {/* Filter Chips */}
+      <View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow}>
         {UI_FILTER_OPTIONS.map((status) => (
           <Pressable
@@ -302,16 +314,32 @@ export default function ProjectListScreen() {
           </Pressable>
         ))}
       </ScrollView>
+      </View>
 
       {/* Project List */}
       <FlatList
         data={Array.from(new Map(
-          (searchQuery.trim()
-            ? projects.filter(p => 
+          (() => {
+            let filtered = projects;
+            // Apply status filter client-side as fallback
+            if (filterStatus !== 'All') {
+              const statusMap: Record<string, string> = {
+                'In Progress': 'active',
+                'Planning': 'planning',
+                'Completed': 'completed',
+                'On Hold': 'on_hold',
+              };
+              const status = statusMap[filterStatus] || filterStatus.toLowerCase().replace(' ', '_');
+              filtered = filtered.filter(p => p.status === status);
+            }
+            // Apply search filter client-side
+            if (searchQuery.trim()) {
+              filtered = filtered.filter(p => 
                 p.name.toLowerCase().includes(searchQuery.toLowerCase())
-              )
-            : projects
-          ).map(p => [p.id, p])
+              );
+            }
+            return filtered;
+          })().map(p => [p.id, p])
         ).values())}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (

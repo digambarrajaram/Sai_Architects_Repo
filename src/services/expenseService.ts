@@ -13,6 +13,7 @@ export interface BackendExpense {
   id: string; // UUID
   project_id: string; // UUID
   amount: number;
+  title?: string; // Custom expense title (optional)
   category: string; // Text (Materials, Labor, etc.)
   description?: string;
   expense_date: string; // Date
@@ -35,6 +36,7 @@ export type BackendExpenseCategory =
 export interface CreateExpenseInput {
   project_id: string;
   amount: number;
+  title?: string; // Custom expense title
   category: string;
   description?: string;
   expense_date: string;
@@ -238,6 +240,7 @@ export const expenseService = {
           id,
           project_id,
           amount,
+          title,
           category,
           description,
           expense_date,
@@ -339,6 +342,7 @@ export const expenseService = {
           id,
           project_id,
           amount,
+          title,
           category,
           description,
           expense_date,
@@ -482,6 +486,7 @@ export const expenseService = {
         id: `exp-${Date.now()}`,
         project_id: input.project_id,
         amount: input.amount,
+        title: input.title,
         category: input.category,
         description: input.description,
         expense_date: input.expense_date,
@@ -497,6 +502,7 @@ export const expenseService = {
         .insert({
           project_id: input.project_id,
           amount: input.amount,
+          title: input.title,
           category: input.category,
           description: input.description,
           expense_date: input.expense_date,
