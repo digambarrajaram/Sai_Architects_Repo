@@ -17,6 +17,7 @@ import { RootStackParamList } from '../navigation/types';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { projectService, ProjectServiceError } from '../services/projectService';
+import { useProjects } from '../hooks/useProjects';
 import { auditLogService } from '../services/auditLogService';
 import { AuditAction, AuditEntityType } from '../types';
 import { styles } from './styles/add-project.styles';
@@ -35,6 +36,9 @@ export default function AddProjectScreen() {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const { user } = useAuth();
   const { showToast } = useToast();
+  
+  // Use useProjects hook for direct state update
+  const { addProject } = useProjects({ autoLoad: false });
 
   const [name, setName] = useState('');
   const [budget, setBudget] = useState('');
@@ -52,6 +56,9 @@ export default function AddProjectScreen() {
     month: new Date().getMonth() + 1,
     day: new Date().getDate(),
   });
+
+  // Computed value for disabled state - avoids boolean in style array
+  const isDisabled = !name?.trim() || !budget?.trim() || loading;
 
   const handleSubmit = async () => {
     // Clear previous error
@@ -93,8 +100,7 @@ export default function AddProjectScreen() {
         created_by: user?.id || 'unknown',
       };
 
-      const createdProject =
-        await projectService.createProject(projectData);
+      const createdProject = await addProject(projectData);
 
       // Log audit trail
       await auditLogService.logAction({
@@ -296,19 +302,17 @@ export default function AddProjectScreen() {
         <Pressable
           style={[
             styles.submitBtn,
-            (!name.trim() || !budget.trim() || loading) &&
-              styles.submitBtnDisabled,
+            isDisabled && styles.submitBtnDisabled,
           ]}
           onPress={handleSubmit}
-          disabled={!name.trim() || !budget.trim() || loading}
+          disabled={isDisabled}
         >
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
             <Text style={[
               styles.submitText,
-              (!name.trim() || !budget.trim() || loading) &&
-                styles.submitTextDisabled,
+              isDisabled && styles.submitTextDisabled,
             ]}>
               Create Project
             </Text>

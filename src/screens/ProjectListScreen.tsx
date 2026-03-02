@@ -169,9 +169,12 @@ export default function ProjectListScreen() {
   // Fetch projects when screen comes into focus (e.g., after creating a new project)
   useFocusEffect(
     useCallback(() => {
+      // Reset mount state when screen gains focus
+      isMounted.current = true;
       fetchProjects();
       
       return () => {
+        // Mark as unmounted when screen loses focus
         isMounted.current = false;
       };
     }, [fetchProjects])
