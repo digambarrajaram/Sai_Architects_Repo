@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,19 +10,47 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
+import { LoadingState } from '../components/common/LoadingState';
+import { ErrorState } from '../components/common/ErrorState';
 
-export default function OwnerAuditLogsAdminScreen() {
+const OwnerAuditLogsAdminScreen = () => {
   const navigation =
     useNavigation<StackNavigationProp<RootStackParamList>>();
 
-  return (
-    <View style={styles.root}>
-      {/* Header */}
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchLogs = async () => {
+      try {
+        const { logs } = await auditLogService.getAuditLogsByProject('proj-001');
+        setLogs(logs);
+      } catch (e) {
+        setError(e.message || 'Failed to load logs');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchLogs();
+  }, []);
+
+if (loading) return <LoadingState />;
+if (error) return <ErrorState message={error} onRetry={() => {
+  setLoading(true);
+  setError(null);
+  setLogs([]);
+}} />;
+
+  {/* Header */}
       <View style={styles.header}>
         <Pressable
           style={styles.iconBtn}
           onPress={() => navigation.goBack()}
           testID="back-btn"
+          accessibilityRole="button"
+          accessibilityLabel="Back"
+          accessibilityHint="Navigates to previous screen"
         >
           <Text style={styles.icon}>←</Text>
         </Pressable>
@@ -45,6 +73,9 @@ export default function OwnerAuditLogsAdminScreen() {
             placeholder="Search by ID, user, or project..."
             placeholderTextColor="#94a3b8"
             style={styles.searchInput}
+            accessibilityLabel="Search audits"
+            accessibilityHint="Enter ID, user or project to search"
+            autoCapitalize="none"
           />
         </View>
 
@@ -91,84 +122,22 @@ export default function OwnerAuditLogsAdminScreen() {
             </View>
           </View>
 
-          {/* Today */}
-          <View style={styles.sectionDivider}>
-            <View style={styles.divider} />
-            <Text style={styles.sectionLabel}>TODAY, OCT 24</Text>
-            <View style={styles.divider} />
-          </View>
-
           {/* Timeline */}
           <View style={styles.timeline}>
             <View style={styles.timelineLine} />
-
-            <TimelineItem
-              time="09:42 AM"
-              id="#LOG-8821"
-              title="Approved Expense #4092"
-              badge="FINANCIAL"
-              badgeStyle={styles.badgeGreen}
-              description='Approved amount of ₹4,50,000 for "Heavy Machinery Rental".'
-              project="Highway 101 Expansion"
-            />
-
-            <TimelineItem
-              time="11:15 AM"
-              id="#LOG-8845"
-              title="Updated Material Specs"
-              badge="EDIT"
-              badgeStyle={styles.badgeAmber}
-              monoChanges={[
-                '- "Concrete Grade 40"',
-                '+ "Concrete Grade 50"',
-              ]}
-              project="Bridge Repair Section B"
-            />
-
-            <TimelineItem
-              time="01:30 PM"
-              id="#LOG-8890"
-              title="Project Created"
-              badge="CREATE"
-              badgeStyle={styles.badgeBlue}
-              description="Initialized new project workspace with standard template."
-              project="Downtown Parking Structure"
-              initials="JS"
-            />
+            {logs.map(log => (
+              <TimelineItem
+                key={log.id}
+                time={new Date(log.timestamp).toLocaleTimeString([], { hour: 'numeric', minute: 'numeric', hour12: true })}
+                id={log.id}
+                title={`${log.action} ${log.entity_type}`}
+                badge={log.action}
+                badgeStyle={styles.badgeBlue}
+                description={log.details}
+                project={log.projectId}
+              />
+            ))}
           </View>
-
-          {/* Yesterday */}
-          <View style={styles.sectionDivider}>
-            <View style={styles.divider} />
-            <Text style={styles.sectionLabel}>YESTERDAY, OCT 23</Text>
-            <View style={styles.divider} />
-          </View>
-
-          <View style={styles.timeline}>
-            <View style={styles.timelineLine} />
-
-            <TimelineItem
-              time="4:55 PM"
-              id="#LOG-8712"
-              title="Contract Document Deleted"
-              badge="CRITICAL"
-              badgeStyle={styles.badgeRed}
-              project="West Side Residential"
-              strike="Draft_Agreement_v2.pdf"
-              critical
-            />
-
-            <TimelineItem
-              time="2:00 AM"
-              id="#SYS-0042"
-              title="Automated Permission Update"
-              badge="SYSTEM"
-              badgeStyle={styles.badgePurple}
-              description="Batch processed role updates for 14 active users."
-              system
-            />
-          </View>
-
           <View style={{ height: 40 }} />
         </ScrollView>
       </View>

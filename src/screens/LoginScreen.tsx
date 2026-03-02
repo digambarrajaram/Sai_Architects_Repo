@@ -52,6 +52,9 @@ export default function LoginScreen() {
     try {
       setLoading(true);
       await signIn(email.trim(), password);
+      // Clear credentials after successful login to avoid keeping them in memory
+      setEmail('');
+      setPassword('');
     } catch (err) {
       const errorMessage =
         err instanceof Error
@@ -68,13 +71,13 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.root}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={{ flex: 1 }}>
         <ScrollView
           contentContainerStyle={{ paddingBottom: 20 }}
           keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator
+          showsVerticalScrollIndicator={true}
         >
           {/* Branding */}
           <View style={styles.branding}>
@@ -102,6 +105,8 @@ export default function LoginScreen() {
                 autoCapitalize="none"
                 keyboardType="email-address"
                 autoCorrect={false}
+                accessibilityLabel="Email address input"
+                accessibilityHint="Enter your email address"
               />
             </View>
 
@@ -113,6 +118,10 @@ export default function LoginScreen() {
                 secureTextEntry
                 value={password}
                 onChangeText={setPassword}
+                autoCapitalize="none"
+                autoCorrect={false}
+                accessibilityLabel="Password input"
+                accessibilityHint="Enter your password"
               />
             </View>
 
@@ -128,6 +137,9 @@ export default function LoginScreen() {
               ]}
               onPress={handleLogin}
               disabled={!isFormValid || loading || authLoading}
+              accessibilityRole="button"
+              accessibilityLabel="Sign In Securely"
+              accessibilityHint="Tap to sign in with your credentials"
             >
               {loading || authLoading ? (
                 <View style={styles.loadingButtonContent}>
@@ -145,7 +157,7 @@ export default function LoginScreen() {
               Forgot password?
             </Text>
 
-            {showDemoHint && (
+            {showDemoHint && __DEV__ && (
               <View style={styles.demoHint}>
                 <Text style={styles.demoHintTitle}>
                   Demo Mode

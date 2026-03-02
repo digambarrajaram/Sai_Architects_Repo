@@ -44,7 +44,7 @@ const debounce = <T extends (...args: any[]) => any>(
   func: T,
   wait: number
 ): ((...args: Parameters<T>) => void) => {
-  let timeout: NodeJS.Timeout;
+  let timeout: any;
   return (...args: Parameters<T>) => {
     clearTimeout(timeout);
     timeout = setTimeout(() => func(...args), wait);
@@ -340,16 +340,12 @@ const debouncedFetch = useCallback(() => {
 // The useEffect was causing issues due to missing debouncedFetch in dependencies
 // and was redundant with the useFocusEffect below
 
-// Focus effect - fetch data only on first focus to prevent infinite loop
-const hasFetchedData = useRef(false);
-
+// Focus effect - fetch data when screen comes into focus
 useFocusEffect(
   useCallback(() => {
-    // Only fetch on first focus, not on every focus
-    if (!hasFetchedData.current) {
-      hasFetchedData.current = true;
-      fetchData();
-    }
+    // Always fetch when screen comes into focus to get latest data
+    // This ensures newly created expenses appear immediately
+    fetchData();
     
     return () => {
       // Cleanup: clear any pending timeouts when unmounting or refocusing
@@ -360,8 +356,8 @@ useFocusEffect(
   }, [fetchData])
 );
 
-// FIX: Proper filter change detection - use primitive values in dependency array
-// This triggers a debounced fetch only when filter values actually change
+// FIX: Proper filter change detection - include ALL filter values in dependency array
+// This triggers a debounced fetch when ANY filter value changes
 useEffect(() => {
   // Skip initial mount - useFocusEffect handles that
   const timer = setTimeout(() => {
@@ -375,8 +371,12 @@ useEffect(() => {
   filters.customEndDate?.toISOString(),
   filters.status,
   filters.searchQuery,
-  // For array, we'll just trigger on length changes for major filter changes
-  filters.categories.length,
+  // FIX: Include actual categories array content instead of just length
+  JSON.stringify(filters.categories),
+  // FIX: Include amount filters in dependency array
+  filters.minAmount,
+  filters.maxAmount,
+  filters.sortBy,
 ]);
 
   // Sort expenses

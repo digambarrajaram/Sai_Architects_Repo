@@ -261,7 +261,6 @@ export default function ProjectListScreen() {
           testID="profile-btn"
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Text style={styles.profileIcon}>👤</Text>
         </Pressable>
         <Text style={styles.headerTitle} testID="projects-title">Projects</Text>
         <Pressable 

@@ -1,4 +1,6 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { projectService } from '../services/projectService';
 import {
   View,
   Text,
@@ -22,32 +24,38 @@ export default function FinancialDashboardOwnerScreen() {
   const navigation =
     useNavigation<StackNavigationProp<RootStackParamList>>();
 
-  const projects: Project[] = [
-    {
-      name: 'Project Alpha',
-      amount: '₹4,50,00,000',
-      pct: '85%',
-      color: '#ef4444',
-    },
-    {
-      name: 'Project Beta',
-      amount: '₹3,20,00,000',
-      pct: '65%',
-      color: '#f59e0b',
-    },
-    {
-      name: 'Project Gamma',
-      amount: '₹1,10,00,000',
-      pct: '40%',
-      color: '#10b981',
-    },
-  ];
+  const { user } = useAuth();
+  const [projectsData, setProjectsData] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const data = await projectService.getProjects(user?.id, {});
+        setProjectsData(data);
+      } catch (e) {
+        setError(e.message || 'Failed to load projects');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProjects();
+  }, [user?.id]);
+
 
   const legendData: Project[] = [
     { name: 'Materials', amount: '', pct: '45%', color: '#136dec' },
     { name: 'Labor', amount: '', pct: '30%', color: '#f59e0b' },
     { name: 'Logistics', amount: '', pct: '25%', color: '#ef4444' },
   ];
+
+  if (loading) return <LoadingState />;
+  if (error) return <ErrorState message={error} onRetry={() => {
+    setLoading(true);
+    setError(null);
+    // trigger re-fetch by changing user.id dependency (no need here)
+  }} />;
 
   return (
     <View style={styles.container}>
@@ -58,6 +66,9 @@ export default function FinancialDashboardOwnerScreen() {
             style={styles.iconBtn}
             onPress={() => navigation.goBack()}
             testID="back-btn"
+            accessibilityRole="button"
+            accessibilityLabel="Back"
+            accessibilityHint="Navigates to previous screen"
           >
             <Text>←</Text>
           </Pressable>
@@ -66,6 +77,9 @@ export default function FinancialDashboardOwnerScreen() {
             <Pressable
               style={styles.avatar}
               onPress={() => navigation.navigate('Profile')}
+              accessibilityRole="button"
+              accessibilityLabel="Profile"
+              accessibilityHint="Open profile screen"
             />
             <View>
               <Text style={styles.greeting}>Good Morning,</Text>
@@ -73,7 +87,11 @@ export default function FinancialDashboardOwnerScreen() {
             </View>
           </View>
 
-          <Pressable style={styles.iconBtn}>
+          <Pressable style={styles.iconBtn}
+            accessibilityRole="button"
+            accessibilityLabel="Notifications"
+            accessibilityHint="View notifications"
+          >
             <Text>🔔</Text>
             <View style={styles.notificationDot} />
           </Pressable>
