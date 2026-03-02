@@ -17,7 +17,6 @@ import { RootStackParamList } from '../navigation/types';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { projectService, ProjectServiceError } from '../services/projectService';
-import { useProjects } from '../hooks/useProjects';
 import { auditLogService } from '../services/auditLogService';
 import { AuditAction, AuditEntityType } from '../types';
 import { styles } from './styles/add-project.styles';
@@ -36,9 +35,6 @@ export default function AddProjectScreen() {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const { user } = useAuth();
   const { showToast } = useToast();
-  
-  // Use useProjects hook for direct state update
-  const { addProject } = useProjects({ autoLoad: false });
 
   const [name, setName] = useState('');
   const [budget, setBudget] = useState('');
@@ -100,7 +96,7 @@ export default function AddProjectScreen() {
         created_by: user?.id || 'unknown',
       };
 
-      const createdProject = await addProject(projectData);
+      const createdProject = await projectService.createProject(projectData);
 
       // Log audit trail
       await auditLogService.logAction({
